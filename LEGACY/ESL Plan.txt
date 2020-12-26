@@ -1,0 +1,18 @@
+Selbstgeschrieben Chrome extension-> Button und Hotkey fügt job hinzu
+Job: 	Momentan geöffnetes fenster mit url wird über native messaging an python
+
+	https://stackoverflow.com/questions/1979583/how-can-i-get-the-url-of-the-current-tab-from-a-google-chrome-extension
+
+
+	script "arbeitsamt" weitergeleitet, welches die url in massnahme.info schreibt
+	-> Sobald 10 Sekunden ohne neuen Job vergangen sind startet das runterladen aller files in massnahme.info piece py piece
+	-> wenn massnahme.info NACH downloaden leer ist starte verschiebung und konvertierung in Order welcher in extension
+	   optionen o.ä. spezifiziert wurde
+	
+
+
+Lädt Video per youtube-dl herunter: youtube-dl -f bestvideo+bestaudio LINK nach Runterladungen
+Ruft nach der Kompletion aller Jobs WAVing_All_VIDS auf.
+
+
+Netzwerk online update: https://realpython.com/python-sockets/

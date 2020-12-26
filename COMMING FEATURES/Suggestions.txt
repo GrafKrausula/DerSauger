@@ -1,0 +1,6 @@
+1) Zwei Hotkeys: STRG + SPACE für downloaden und dann konvertieren
+		???  + ??? für nur downloaden
+
+2) Tagsystem: Wenn Tag in URL enthalten ist nicht konvertieren, wenn 1) implementiert 2) nicht mehr nötig
+
+3) Piping von download threadoutput um bei YT-DL Fehler "Unable to extract videodata" oder generell "Errors" den thread neu zu starten.

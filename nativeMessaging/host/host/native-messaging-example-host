@@ -1,0 +1,376 @@
+import struct
+import sys
+import threading
+import queue
+import time
+import traceback
+import json
+import os
+import pathlib
+from pathlib import Path
+import subprocess
+from subprocess import Popen, PIPE
+from os import walk
+import os, shutil, glob
+from subprocess import Popen, CREATE_NEW_CONSOLE
+
+# On Windows, the default I/O mode is O_TEXT. Set this to O_BINARY
+# to avoid unwanted modifications of the input/output streams.
+if sys.platform == "win32":
+  import os, msvcrt
+  msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+  msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+
+def create_log(message):
+
+    path = getConvertScriptPath() + "\CRASH_LOG.txt"
+    send_message('{"Info": Log Path: %s}' % path)
+    log_file = open(path, "a")
+    log_file.write(message)
+    log_file.write("\n\n")
+    log_file.close()
+
+def get_size(folder_path):
+    return sum(entry.stat().st_size for entry in os.scandir(folder_path))
+
+def getConvertScriptPath():
+
+    scriptpath = str(pathlib.Path(__file__).parent.absolute())
+    convertscriptpath = scriptpath.replace(r"\nativeMessaging\host\host","")
+    return convertscriptpath
+
+def wavingTheVids(format,downloadpath,convertpath):
+
+    convertscriptpath = getConvertScriptPath()
+    format = format.lower() #format muss kleingeschrieben sein
+
+    send_message('{"Info": Waving All Vids %s}' % len(cmd_threads))
+    openScriptCmd = f'cmd /c "cd /d "{convertscriptpath}"'
+    openScriptCmd +=f' && python WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
+    openScriptCmd += ' " '
+    send_message('{"openScriptCmd": %s}' % openScriptCmd)
+    process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
+
+def createdownloadcmd(url,downloadpath):
+
+    downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
+    downloadcmd+= f" && youtube-dl -f bestvideo+bestaudio/best {url}"
+    downloadcmd+= ' " '
+    send_message('{"cmd": %s}' % downloadcmd)
+    return downloadcmd
+
+def byte_to_megabyte(byte_size): #calcs an byte int to megabyte it, just for reading comprehension
+    return byte_size / 1024**2
+
+
+def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslagern in seperaten thread pro aufruf
+    #os.system(f"start %s" %createdownloadcmd(url))
+
+    size_pre_download = get_size(downloadpath)
+    send_message('{"Info": size_pre_download: %s}' % byte_to_megabyte(size_pre_download))
+
+    process = subprocess.Popen(createdownloadcmd(url,downloadpath), creationflags=CREATE_NEW_CONSOLE)
+
+    process.poll()
+    process.wait()
+
+    size_post_download = get_size(downloadpath)
+    send_message('{"Info": size_post_download: %s}' % byte_to_megabyte(size_post_download))
+
+    if size_post_download == size_pre_download:
+        send_message('{"Info": Nothing got downloaded}')
+        downloadConvertFiles(url,format,convert,downloadpath,convertpath)
+        return
+
+    download_size = (size_post_download-size_pre_download)
+
+    send_message('{"Info": Download Size: %s}' % byte_to_megabyte(download_size))
+    #WHier muss threadabfrage der variable für cmd threads sprich threads stattfinden
+    #Ist dieser der letzte offene thread in der liste wird wavingthevids aufgerufen
+    send_message('{"Info": Active Threads after download: %s}' % len(cmd_threads))
+    send_message('{"Info": Threadcontent: %s}' % cmd_threads)
+    active_count = count_active_cmd_threads()
+    send_message('{"Info": ActiveCount: %s}' % active_count)
+    if active_count == 1:
+        if convert == "true": wavingTheVids(format,downloadpath,convertpath)
+    sys.exit(0)
+
+def count_all_threads():
+    i = 0
+    for thread in threading.enumerate():
+        i += 1
+    return i
+
+def count_active_cmd_threads():
+
+    active = 0
+    for t in cmd_threads:
+        if t.is_alive() == True:
+            active += 1
+    return active
+
+def slicer(my_str,sub):
+    index=my_str.find(sub)
+    if index !=-1 :
+          return my_str[index:]
+    else :
+          raise Exception('Sub string not found!')
+
+# Helper function that sends a message to the webapp.
+def send_message(message):
+
+  # encodes content to
+  encodedContent = json.dumps(message)
+  #encodes length to 4byte Datastructure
+  encodedLength = struct.pack('@I', len(encodedContent))
+  encodedMessage = {'length': encodedLength, 'content': encodedContent}
+  sys.stdout.buffer.write(encodedMessage['length'])
+  sys.stdout.write(encodedMessage['content'])
+  sys.stdout.flush()
+
+# Thread that reads messages from the webapp.
+def read_thread_func(queue):
+  message_number = 0
+
+  while 1:
+
+    # Reads the first 4 bytes of the message (which designates message length).
+    text_length_bytes = sys.stdin.buffer.read(4)
+
+    #+ send_message('{"dbug": "stdin %s"}' % text_length_bytes)
+
+    if len(text_length_bytes) == 0:
+      if queue:
+        queue.put(None)
+      sys.exit(0)
+
+    # Unpacks the first 4 bytes that are the message length. [0] required because unpack returns tuple with required data at index 0.
+    text_length = struct.unpack("i", text_length_bytes)[0]
+
+    # Reads and decodes the text (which is JSON) of the message.
+    text_decoded = sys.stdin.buffer.read(text_length).decode("utf-8")
+    # Converts the message string into a dictionary.
+    text_dict = json.loads(text_decoded)
+
+    if queue:
+      queue.put(text_dict)
+    else:
+      # In headless mode just send an echo message back.
+      send_message('{"echo": %s}' % text_dict)
+
+def debug(self,func,input):
+  try:
+    func(input)
+    return True
+  except Exception as err:
+    self.log("ERR %s" % err)
+    return False
+
+if True:
+  class NativeMessagingWindow():
+    def __init__(self, q, main):
+      self.q = q
+      self.main = main
+      self.url = None
+      self.deathtimer_t = None
+      self.convertpath = None
+      self.downloadpath = None
+      self.convert = None
+      self.format = None
+
+    def start(self):
+      send_message('{"Info": Starting Messaging}')
+      self.processMessages()
+
+    def processMessages(self): ##Loop
+
+      while not self.q.empty():
+        #send_message('{"info": "Queue Size: %s"}' % str(self.q.qsize()))
+        message = self.q.get_nowait()
+        if message == None:
+          self.quit()
+          return
+
+        #self.log(f"ThreadsCount: %s CMDThreads:{self.threads}" % threading.active_count())
+        self.log("Recieved: %s" % message)
+
+        #self.log("CHECK %s" % self.url)
+        if self.checkForPath(message):
+            break
+
+        if self.checkForUrl(message):
+          if self.downloadpath != None:
+              self.debug(self.convertUrl,message)
+          else:
+              self.log("ERROR: Downloadpath is not declared")
+
+      #self.log("THREADS: %s" % count_active_cmd_threads())
+      if count_active_cmd_threads() == 0:
+          if self.deathtimer_t == None:
+            self.log("Initiating deathtimer because THREADS = %s" % count_active_cmd_threads())
+
+            self.deathtimer_t = threading.Thread(target=self.deathtimer, args=())
+            self.deathtimer_t.daemon = True
+            self.deathtimer_t.start()
+
+      time.sleep(0.1)
+      self.processMessages()
+
+
+    def log(self, message):
+        send_message(message)
+
+    #{"format":"wav","convert":true,"downloadpath":"E:/RENDER OUTPUT","convertpath":"E:/Runterladungen!"}
+    def checkForPath(self, message):
+      message = json.dumps(message)
+      if "format" in message:
+          self.log("PREFERENCES FOUND")
+
+          pref_list = ['format','convert','downloadpath','convertpath']
+          sliced_list = []
+
+          message.replace('"','')
+
+          for i,setting in enumerate(pref_list):
+              setting = message.split(',')[i]
+              sliced_list.append(setting)
+              #self.log(setting)
+              #self.log(message)
+
+          #self.log(pref_list)
+          for i,slice in enumerate(sliced_list):
+              #self.log(slice)
+              sliced_list[i] = slice.replace('"',"")
+              sliced_list[i] = sliced_list[i].replace('{',"")
+              sliced_list[i] = sliced_list[i].replace('}',"")
+
+              sliced_list[i] = sliced_list[i].replace(pref_list[i],"")  #ersetzt die identifikatoren der parameter
+              try:
+                  sliced_list[i] = self.cut_unwanted_prefix(sliced_list[i]) #ersetzt ungewünschte prefixe vor
+                  sliced_list[i] = sliced_list[i].replace("#","")
+                  sliced_list[i] = self.cut_unwanted_prefix(sliced_list[i]) #den einstellungsparametern
+                  sliced_list[i] = sliced_list[i].replace("#","")
+                  sliced_list[i] = self.cut_unwanted_prefix(sliced_list[i]) #mit einer raute
+                  sliced_list[i] = sliced_list[i].replace("#","")
+              except Exception as err:
+                  self.log('{"Err: ": %s}' % err)
+
+              self.log(sliced_list[i])
+
+
+          self.format = sliced_list[0]
+          self.convert = sliced_list[1]
+          self.downloadpath = sliced_list[2]
+          self.convertpath = sliced_list[3]
+
+          #self.log("PREFERENCES SLICED")
+          return True
+
+      #self.log("NO PREFERENCES FOUND")
+      return False
+
+    def cut_unwanted_prefix(self,slice):
+        rebuild_slice = ""
+        for n,char in enumerate(slice): #leerzeichen vorne entfernen
+            #self.log(f"{n} {char}")
+            if (n == 0) and (char == ":"): char = "#"
+            if n == 0 and char == " ": char = "#"
+            rebuild_slice+=char
+
+        return rebuild_slice
+
+    def deathtimer(self):
+        for i in range(90):
+            time.sleep(1)
+            if i%10 == 0: send_message('{"Info": Deathtimer at second %s}' % i)
+            if count_active_cmd_threads() >= 1:
+                send_message('{"Info": Deathtimer got canceled at second %s}' % i)
+                self.deathtimer_t = None
+                return
+        send_message('{"Info": Deathtimer at %s, killing Process now}' % i)
+
+        #main_window = None
+        try:
+            #send_message('{"Jo": %s}' % m)
+            #send_message(id(self.main))
+            self.main.exit()
+            sys.exit(0)
+        except Exception as err:
+            send_message('{"Err main.exit": %s}' % err)
+
+    def checkForUrl(self, message):
+      self.url = None
+      #self.log("Check For URL %s" % message)
+      #self.log("Type %s" % type(message)) -> dict
+      message = json.dumps(message)
+      #self.log("Check For URL %s" % message)
+      #self.log("Type %s" % type(message)) -> string
+      if "http" in message:
+          frontCut = slicer(message,'http')
+          #self.log("SplitFrontAway Url %s" % frontCut)
+          completeCut = frontCut.split('"')[0]
+          #self.log("SplitBackAway %s" % completeCut)
+          self.log("URL FOUND")
+          self.url = completeCut
+          return True
+      #self.log("NO URL FOUND")
+      return False
+
+    def convertUrl(self, message):
+      try:
+          self.log("Convert: %s" % self.url)
+          cmd_t = threading.Thread(target=downloadConvertFiles, args=(self.url,self.format,self.convert,self.downloadpath,self.convertpath))
+          cmd_threads.append(cmd_t)
+          cmd_t.deamon = True #WICHTIG!!!!! Wenn nur noch deamon = True threads offen sind werden diese sofort beendet
+          cmd_t.start()
+          self.log("Threads: %s" % cmd_threads)
+
+      except Exception as err:
+          self.log("ERR %s" % err)
+
+    def debug(self,func,input):
+      try:
+        func(input)
+        return True
+      except Exception as err:
+        self.log("ERR %s" % err)
+        return False
+
+class Main():
+
+  def __init__(self):
+
+    self.q = queue.Queue()
+
+    self.main_window = NativeMessagingWindow(self.q,self)
+    self.main_thread = threading.Thread(target=read_thread_func, args=(self.q,))
+    self.main_thread.daemon = True
+    self.main_thread.start()
+
+    self.main_window.start()
+
+
+  def exit(self):
+    try:
+        #send_message("active threads before exit %s" % count_all_threads())
+        #send_message("Main ID %s" % threading.get_ident())
+        sys.exit(0)
+    except Exception as err:
+        print(err)
+
+
+if __name__ == '__main__':
+
+  try:
+      cmd_threads = []
+      Main()
+
+  except Exception as err:
+
+      send_message('{"Err": %s}' % err)
+      traceback_string = traceback.format_exc()
+      send_message('{"Traceback": %s}' % traceback_string)
+      create_log(traceback_string)
+      traceback.print_exc()
+      #print(err)
+      x = input("An error occured! Press Any key to exit...")
