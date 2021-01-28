@@ -78,12 +78,12 @@ async function getAndSendUrl(){
 
 chrome.commands.onCommand.addListener(async function(command) {
   if(command == "toggle"){
-    sendPreferences()
+    sendPreferences() //sendet url und präferenzen
   }
 });
 
 chrome.browserAction.onClicked.addListener(async function (tab) {
   //chrome.tabs.create({url: 'main.html'})
-  sendPreferences()
+  sendPreferences() //sendet url und präfernezen
 
 })
