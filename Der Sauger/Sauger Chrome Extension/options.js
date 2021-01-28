@@ -87,6 +87,10 @@ function restore_options_KRSE() {
   get_options()
 }
 
+function update_script() {
+
+}
+
 document.addEventListener('DOMContentLoaded', get_options);
 document.getElementById('reset').addEventListener('click',
     restore_options);
@@ -94,3 +98,5 @@ document.getElementById('save').addEventListener('click',
     save_options);
 document.getElementById('KRSE').addEventListener('click',
     restore_options_KRSE);
+document.getElementById('UPDATE').addEventListener('click',
+    update_script);
