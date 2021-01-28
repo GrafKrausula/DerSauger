@@ -20,8 +20,6 @@ Vernünftige uninstall bat mit löschung und detektierung aller ffmpeg und youtu
 Installer bat: Detektierung, ob pfadvariablen wirklich eingefügt wurden
 
 
-Rekursionsbug beheben
-
 
 Hotkeys für verschiede formate einführen:
 
