@@ -1,3 +1,9 @@
+#PREFERENCES
+
+CRASH_LOG.txt
+LOG.txt
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -101,8 +107,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 # Logs
-
-CRASH_LOG.txt
 
 
 

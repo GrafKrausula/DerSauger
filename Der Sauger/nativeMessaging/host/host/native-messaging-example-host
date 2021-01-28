@@ -21,10 +21,19 @@ if sys.platform == "win32":
   msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
   msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
-def create_log(message):
+def create_crashlog(message):
 
-    path = getConvertScriptPath() + "\CRASH_LOG.txt"
-    send_message('{"Info": Log Path: %s}' % path)
+    path = getScriptPath() + "\CRASH_LOG.txt"
+    send_message('{"Info": Crashlog Path: %s}' % path)
+    log_file = open(path, "a")
+    log_file.write(message)
+    log_file.write("\n\n")
+    log_file.close()
+
+def write_log(message):
+
+    path = getScriptPath() + "\LOG.txt"
+    #send_message('{"Info": Log Path: %s}' % path)
     log_file = open(path, "a")
     log_file.write(message)
     log_file.write("\n\n")
@@ -32,6 +41,10 @@ def create_log(message):
 
 def get_size(folder_path):
     return sum(entry.stat().st_size for entry in os.scandir(folder_path))
+
+def getScriptPath():
+
+    return getConvertScriptPath()
 
 def getConvertScriptPath():
 
@@ -63,10 +76,18 @@ def byte_to_megabyte(byte_size): #calcs an byte int to megabyte it, just for rea
     return byte_size / 1024**2
 
 
+def downloadFiles_host(url,format,convert,downloadpath,convertpath):
+
+    for i in range(10):
+        if downloadConvertFiles(url,format,convert,downloadpath,convertpath) == True: return
+
+
+
 def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslagern in seperaten thread pro aufruf
     #os.system(f"start %s" %createdownloadcmd(url))
 
     size_pre_download = get_size(downloadpath)
+
     send_message('{"Info": size_pre_download: %s}' % byte_to_megabyte(size_pre_download))
 
     process = subprocess.Popen(createdownloadcmd(url,downloadpath), creationflags=CREATE_NEW_CONSOLE)
@@ -74,13 +95,14 @@ def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslager
     process.poll()
     process.wait()
 
+    ###downloadgrößen check
+
     size_post_download = get_size(downloadpath)
     send_message('{"Info": size_post_download: %s}' % byte_to_megabyte(size_post_download))
 
     if size_post_download == size_pre_download:
         send_message('{"Info": Nothing got downloaded}')
-        downloadConvertFiles(url,format,convert,downloadpath,convertpath)
-        return
+        return False
 
     download_size = (size_post_download-size_pre_download)
 
@@ -94,7 +116,7 @@ def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslager
     if active_count == 1:
         if convert == "true": wavingTheVids(format,downloadpath,convertpath)
     sys.exit(0)
-
+    return True
 def count_all_threads():
     i = 0
     for thread in threading.enumerate():
@@ -119,6 +141,7 @@ def slicer(my_str,sub):
 # Helper function that sends a message to the webapp.
 def send_message(message):
 
+  write_log(message)
   # encodes content to
   encodedContent = json.dumps(message)
   #encodes length to 4byte Datastructure
@@ -319,7 +342,7 @@ if True:
     def convertUrl(self, message):
       try:
           self.log("Convert: %s" % self.url)
-          cmd_t = threading.Thread(target=downloadConvertFiles, args=(self.url,self.format,self.convert,self.downloadpath,self.convertpath))
+          cmd_t = threading.Thread(target=downloadFiles_host, args=(self.url,self.format,self.convert,self.downloadpath,self.convertpath))
           cmd_threads.append(cmd_t)
           cmd_t.deamon = True #WICHTIG!!!!! Wenn nur noch deamon = True threads offen sind werden diese sofort beendet
           cmd_t.start()
@@ -370,7 +393,7 @@ if __name__ == '__main__':
       send_message('{"Err": %s}' % err)
       traceback_string = traceback.format_exc()
       send_message('{"Traceback": %s}' % traceback_string)
-      create_log(traceback_string)
+      create_crashlog(traceback_string)
       traceback.print_exc()
       #print(err)
       x = input("An error occured! Press Any key to exit...")
