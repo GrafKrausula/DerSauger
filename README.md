@@ -20,8 +20,6 @@ Vernünftige uninstall bat mit löschung und detektierung aller ffmpeg und youtu
 Installer bat: Detektierung, ob pfadvariablen wirklich eingefügt wurden
 
 
-Rekursionsbug beheben
-
 
 Hotkeys für verschiede formate einführen:
 
@@ -29,4 +27,16 @@ STRG+ALT+3 -> MP3
 STRG+ALT+W -> WAV
 STRG+ALT+M -> MKV
 STRG+ALT+4 -> MP4
+
+
+"Initialize the extension 
+Listen to the runtime.onInstalled event to initialize an extension on installation. Use this event to set a state or for one-time initialization, such as a context menu.
+
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.contextMenus.create({
+    "id": "sampleContextMenu",
+    "title": "Sample Context Menu",
+    "contexts": ["selection"]
+  });
+}); "
 
