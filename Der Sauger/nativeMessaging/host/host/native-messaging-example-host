@@ -1,6 +1,7 @@
 import struct
 import sys
 import threading
+import _thread
 import queue
 import time
 import traceback
@@ -21,6 +22,15 @@ if sys.platform == "win32":
   msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
   msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
 
+def is_main_thread():
+    if threading.current_thread() is threading.main_thread():
+        send_message('{"Info": current_thread is main thread}')
+        return True
+    else:
+        send_message('{"Info": current_thread is NOT the main thread}')
+        send_message('{"Info": current_thread: %s}' % threading.current_thread().ident)
+        return False
+
 def create_crashlog(message):
 
     path = getScriptPath() + "\CRASH_LOG.txt"
@@ -29,6 +39,7 @@ def create_crashlog(message):
     log_file.write(message)
     log_file.write("\n\n")
     log_file.close()
+    return
 
 def write_log(message):
 
@@ -38,6 +49,7 @@ def write_log(message):
     log_file.write(message)
     log_file.write("\n\n")
     log_file.close()
+    return
 
 def get_size(folder_path):
     return sum(entry.stat().st_size for entry in os.scandir(folder_path))
@@ -63,6 +75,7 @@ def wavingTheVids(format,downloadpath,convertpath):
     openScriptCmd += ' " '
     send_message('{"openScriptCmd": %s}' % openScriptCmd)
     process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
+    return
 
 def createdownloadcmd(url,downloadpath):
 
@@ -79,9 +92,9 @@ def byte_to_megabyte(byte_size): #calcs an byte int to megabyte it, just for rea
 def downloadFiles_host(url,format,convert,downloadpath,convertpath):
 
     for i in range(10):
-        if downloadConvertFiles(url,format,convert,downloadpath,convertpath) == True: return
-
-
+        if downloadConvertFiles(url,format,convert,downloadpath,convertpath) == True:
+            sys.exit(0)
+            return
 
 def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslagern in seperaten thread pro aufruf
     #os.system(f"start %s" %createdownloadcmd(url))
@@ -115,13 +128,20 @@ def downloadConvertFiles(url,format,convert,downloadpath,convertpath): #auslager
     send_message('{"Info": ActiveCount: %s}' % active_count)
     if active_count == 1:
         if convert == "true": wavingTheVids(format,downloadpath,convertpath)
-    sys.exit(0)
+
     return True
+
 def count_all_threads():
     i = 0
     for thread in threading.enumerate():
         i += 1
     return i
+
+def get_all_threads_in_list():
+    all_threads = []
+    for thread in threading.enumerate():
+        all_threads.append(thread)
+    return all_threads
 
 def count_active_cmd_threads():
 
@@ -202,17 +222,37 @@ if True:
       self.format = None
 
     def start(self):
-      send_message('{"Info": Starting Messaging}')
-      self.processMessages()
+      self.log('{"Info": Loop initialized}')
+      self.log('{"Info": current_thread: %s}' % threading.current_thread().ident)
+      loop_is_working = True
+
+
+      while loop_is_working == True:
+
+        loop_is_working = self.processMessages()
+
+        if loop_is_working != True:
+            try:
+            #send_message('{"Jo": %s}' % m)
+            #send_message(id(self.main))
+                self.log('{"loop_is_working": %s}' % loop_is_working)
+                self.initialize_exit()
+            except Exception as err:
+                self.log('{"Err loop ist somehow broken and cannot be quit": %s}' % err)
+
+        time.sleep(0.1)
 
     def processMessages(self): ##Loop
 
       while not self.q.empty():
         #send_message('{"info": "Queue Size: %s"}' % str(self.q.qsize()))
         message = self.q.get_nowait()
+
+        ###ABBRUCHBEDINGUNG DER WHILE SCHLEIFE!!!!#####
         if message == None:
+          self.log('{"Info": Message = Null/None, Aborting Programm}')
           self.quit()
-          return
+          return False
 
         #self.log(f"ThreadsCount: %s CMDThreads:{self.threads}" % threading.active_count())
         self.log("Recieved: %s" % message)
@@ -236,9 +276,7 @@ if True:
             self.deathtimer_t.daemon = True
             self.deathtimer_t.start()
 
-      time.sleep(0.1)
-      self.processMessages()
-
+      return True
 
     def log(self, message):
         send_message(message)
@@ -302,6 +340,8 @@ if True:
 
         return rebuild_slice
 
+    ###Wird in thread aufgerufen...
+
     def deathtimer(self):
         for i in range(90):
             time.sleep(1)
@@ -314,12 +354,9 @@ if True:
 
         #main_window = None
         try:
-            #send_message('{"Jo": %s}' % m)
-            #send_message(id(self.main))
-            self.main.exit()
-            sys.exit(0)
+            self.initialize_exit()
         except Exception as err:
-            send_message('{"Err main.exit": %s}' % err)
+            self.log('{"Err main.exit": %s}' % err)
 
     def checkForUrl(self, message):
       self.url = None
@@ -342,10 +379,10 @@ if True:
     def convertUrl(self, message):
       try:
           self.log("Convert: %s" % self.url)
-          cmd_t = threading.Thread(target=downloadFiles_host, args=(self.url,self.format,self.convert,self.downloadpath,self.convertpath))
-          cmd_threads.append(cmd_t)
-          cmd_t.deamon = True #WICHTIG!!!!! Wenn nur noch deamon = True threads offen sind werden diese sofort beendet
-          cmd_t.start()
+          cmd_host = threading.Thread(target=downloadFiles_host, args=(self.url,self.format,self.convert,self.downloadpath,self.convertpath))
+          cmd_threads.append(cmd_host)
+          cmd_host.deamon = True #WICHTIG!!!!! Wenn nur noch deamon = True threads offen sind werden diese sofort beendet
+          cmd_host.start()
           self.log("Threads: %s" % cmd_threads)
 
       except Exception as err:
@@ -359,6 +396,22 @@ if True:
         self.log("ERR %s" % err)
         return False
 
+    def initialize_exit(self):
+        self.q.put(None)
+
+    def quit(self):
+        self.log('{"Info": Quitting the following thread}')
+        if is_main_thread():
+            sys.exit(0)
+        else:
+            self.log("All threads %s" % count_all_threads())
+            self.log('{"Info": Threadcontent: %s}' % cmd_threads)
+            self.log("Main ID %s" % threading.get_ident())
+            self.log('{"Info": ActiveCount: %s}' % count_active_cmd_threads())
+            self.log('{"Info": All Threads: %s}' % get_all_threads_in_list())
+            raise RuntimeError('Main thread couldnt be quit. Probably a Threading Error')
+
+
 class Main():
 
   def __init__(self):
@@ -371,15 +424,6 @@ class Main():
     self.main_thread.start()
 
     self.main_window.start()
-
-
-  def exit(self):
-    try:
-        #send_message("active threads before exit %s" % count_all_threads())
-        #send_message("Main ID %s" % threading.get_ident())
-        sys.exit(0)
-    except Exception as err:
-        print(err)
 
 
 if __name__ == '__main__':
