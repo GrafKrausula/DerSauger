@@ -201,6 +201,10 @@ def read_thread_func(queue):
       # In headless mode just send an echo message back.
       send_message('{"echo": %s}' % text_dict)
 
+def invokeUpdate():
+    return True
+
+
 def debug(self,func,input):
   try:
     func(input)
@@ -224,23 +228,29 @@ if True:
     def start(self):
       self.log('{"Info": Loop initialized}')
       self.log('{"Info": current_thread: %s}' % threading.current_thread().ident)
+
       loop_is_working = True
 
-
       while loop_is_working == True:
-
         loop_is_working = self.processMessages()
 
         if loop_is_working != True:
-            try:
-            #send_message('{"Jo": %s}' % m)
-            #send_message(id(self.main))
-                self.log('{"loop_is_working": %s}' % loop_is_working)
-                self.initialize_exit()
-            except Exception as err:
-                self.log('{"Err loop ist somehow broken and cannot be quit": %s}' % err)
+            self.stop(loop_is_working)
+            return
+
+        if count_active_cmd_threads() == 0:
+            self.startDeathtimer()
+
 
         time.sleep(0.1)
+
+    def stop(self,loop_is_working):
+
+        try:
+            self.log('{"loop_is_working": %s}' % loop_is_working)
+            self.exit() ##Da loop nicht mehr funktioniert harte programmbeendigung durch exit()
+        except Exception as err:
+            self.log('{"Err loop ist somehow broken and cannot be exit": %s}' % err)
 
     def processMessages(self): ##Loop
 
@@ -249,40 +259,46 @@ if True:
         message = self.q.get_nowait()
 
         ###ABBRUCHBEDINGUNG DER WHILE SCHLEIFE!!!!#####
-        if message == None:
+        if message == None: ## exitWithLoop() setzt message == none
           self.log('{"Info": Message = Null/None, Aborting Programm}')
-          self.quit()
           return False
 
         #self.log(f"ThreadsCount: %s CMDThreads:{self.threads}" % threading.active_count())
         self.log("Recieved: %s" % message)
 
         #self.log("CHECK %s" % self.url)
-        if self.checkForPath(message):
-            break
+        if self.checkForUpdate(message):
+            invokeUpdate()
+            return False
+
+        if self.checkForPreferences(message):
+            return True
 
         if self.checkForUrl(message):
           if self.downloadpath != None:
               self.debug(self.convertUrl,message)
+              return True
           else:
               self.log("ERROR: Downloadpath is not declared")
+              return False
 
       #self.log("THREADS: %s" % count_active_cmd_threads())
-      if count_active_cmd_threads() == 0:
-          if self.deathtimer_t == None:
-            self.log("Initiating deathtimer because THREADS = %s" % count_active_cmd_threads())
-
-            self.deathtimer_t = threading.Thread(target=self.deathtimer, args=())
-            self.deathtimer_t.daemon = True
-            self.deathtimer_t.start()
-
       return True
 
     def log(self, message):
         send_message(message)
 
     #{"format":"wav","convert":true,"downloadpath":"E:/RENDER OUTPUT","convertpath":"E:/Runterladungen!"}
-    def checkForPath(self, message):
+    def checkForUpdate(self, message):
+        message = json.dumps(message)
+        if "invokeUpdate" in message:
+            self.log("Update has been requested")
+            return True
+        else:
+            return False
+
+
+    def checkForPreferences(self, message):
       message = json.dumps(message)
       if "format" in message:
           self.log("PREFERENCES FOUND")
@@ -340,24 +356,6 @@ if True:
 
         return rebuild_slice
 
-    ###Wird in thread aufgerufen...
-
-    def deathtimer(self):
-        for i in range(90):
-            time.sleep(1)
-            if i%10 == 0: send_message('{"Info": Deathtimer at second %s}' % i)
-            if count_active_cmd_threads() >= 1:
-                send_message('{"Info": Deathtimer got canceled at second %s}' % i)
-                self.deathtimer_t = None
-                return
-        send_message('{"Info": Deathtimer at %s, killing Process now}' % i)
-
-        #main_window = None
-        try:
-            self.initialize_exit()
-        except Exception as err:
-            self.log('{"Err main.exit": %s}' % err)
-
     def checkForUrl(self, message):
       self.url = None
       #self.log("Check For URL %s" % message)
@@ -388,6 +386,35 @@ if True:
       except Exception as err:
           self.log("ERR %s" % err)
 
+
+    def startDeathtimer(self):
+
+        if self.deathtimer_t == None:
+            self.log("Initiating deathtimer because THREADS = %s" % count_active_cmd_threads())
+
+            self.deathtimer_t = threading.Thread(target=self.deathtimer, args=())
+            self.deathtimer_t.daemon = True
+            self.deathtimer_t.start()
+
+    ###Wird in thread aufgerufen...
+
+    def deathtimer(self):
+        for i in range(90):
+            time.sleep(1)
+            if i%10 == 0: send_message('{"Info": Deathtimer at second %s}' % i)
+            if count_active_cmd_threads() >= 1:
+                send_message('{"Info": Deathtimer got canceled at second %s}' % i)
+                self.deathtimer_t = None
+                return
+        send_message('{"Info": Deathtimer at %s, killing Process now}' % i)
+
+        #main_window = None
+        try:
+            self.exitWithLoop()
+        except Exception as err:
+            self.log('{"Err main.exit": %s}' % err)
+
+
     def debug(self,func,input):
       try:
         func(input)
@@ -396,11 +423,11 @@ if True:
         self.log("ERR %s" % err)
         return False
 
-    def initialize_exit(self):
+    def exitWithLoop(self):
         self.q.put(None)
 
-    def quit(self):
-        self.log('{"Info": Quitting the following thread}')
+    def exit(self):
+        self.log('{"Info": Exitting the following thread}')
         if is_main_thread():
             sys.exit(0)
         else:
@@ -409,7 +436,7 @@ if True:
             self.log("Main ID %s" % threading.get_ident())
             self.log('{"Info": ActiveCount: %s}' % count_active_cmd_threads())
             self.log('{"Info": All Threads: %s}' % get_all_threads_in_list())
-            raise RuntimeError('Main thread couldnt be quit. Probably a Threading Error')
+            raise RuntimeError('Main thread couldnt be exit. Probably a Threading Error')
 
 
 class Main():
