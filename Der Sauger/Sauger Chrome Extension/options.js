@@ -88,7 +88,10 @@ function restore_options_KRSE() {
 }
 
 function update_script() {
-
+  alert("function update_script()")
+  chrome.runtime.sendMessage({Message: "UPDATE"})
+  var status = document.getElementById('status');
+  status.textContent = 'Status: Update invoked. Close this page and wait.';
 }
 
 document.addEventListener('DOMContentLoaded', get_options);

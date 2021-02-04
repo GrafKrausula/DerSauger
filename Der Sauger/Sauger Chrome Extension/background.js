@@ -66,6 +66,10 @@ async function sendPreferences() {
   });
 }
 
+async function invokeUpdate(){
+  await send("invokeUpdate")
+}
+
 async function getAndSendUrl(){
   chrome.tabs.query({active: true, currentWindow: true}, async tabs => {
     var url = tabs[0].url;
@@ -86,4 +90,12 @@ chrome.browserAction.onClicked.addListener(async function (tab) {
   //chrome.tabs.create({url: 'main.html'})
   sendPreferences() //sendet url und präfernezen
 
+})
+
+
+chrome.runtime.onMessage.addListener( function(request,sender,sendResponse)
+{
+    if( request.Message === "UPDATE" ){
+      invokeUpdate()
+    }
 })
