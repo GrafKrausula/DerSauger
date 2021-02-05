@@ -2,6 +2,8 @@ import struct
 import sys
 import threading
 import _thread
+import urllib.request
+import shutil
 import queue
 import time
 import traceback
@@ -9,6 +11,8 @@ import json
 import os
 import pathlib
 from pathlib import Path
+import zipfile
+from zipfile import ZipFile
 import subprocess
 from subprocess import Popen, PIPE
 from os import walk
@@ -21,6 +25,20 @@ if sys.platform == "win32":
   import os, msvcrt
   msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
   msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+
+def makedir(convertpath,new_fldr_name):
+
+    new_fldr_name = new_fldr_name.upper()
+
+    new_fldr = f'{convertpath}\{new_fldr_name}'
+    #print(new_fldr)
+
+    try:
+      os.makedirs(new_fldr) ## it creates the destination folder in capslock
+    except:
+      send_message('{"Info": current_thread: %s}' % new_fldr_name)
+
+    return new_fldr
 
 def is_main_thread():
     if threading.current_thread() is threading.main_thread():
@@ -202,6 +220,47 @@ def read_thread_func(queue):
       send_message('{"echo": %s}' % text_dict)
 
 def invokeUpdate():
+
+    scriptparent_path = getScriptPath().replace("\Der Sauger","")
+    tempdownload_folder = makedir(scriptparent_path,"temp")
+    downloadfile_path = tempdownload_folder + "/UPDATE_DerSauger.zip"
+    send_message('{"Info": scriptparent_path: %s}' % scriptparent_path)
+    send_message('{"Info": tempdownload_folder: %s}' % tempdownload_folder)
+    send_message('{"Info": downloadfile_path: %s}' % downloadfile_path)
+
+    downloadUpdate("https://github.com/GrafKrausula/DerSauger/archive/main.zip", downloadfile_path)
+    send_message('{"Info": downloadfile_path: %s}' % downloadfile_path)
+    download = unzipUpdate(downloadfile_path,tempdownload_folder)
+    send_message('{"Info": download: %s}' % download)
+    installUpdate(download)
+
+    return True
+
+def downloadUpdate(url,file_name):
+
+    file = None
+    with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
+        shutil.copyfileobj(response, out_file)
+        file = out_file
+    return file
+
+
+def unzipUpdate(download_zip,folder):
+
+    if zipfile.is_zipfile(download_zip):
+
+        with ZipFile(download_zip, 'r') as zipObj:
+            # Extract all the contents of zip file in different directory
+            zipObj.extractall(folder)
+            send_message('{"Info": File is unzipped in temp folder: %s}' % zipObj)
+
+        return True
+
+    else:
+        return False
+
+def installUpdate(download):
+
     return True
 
 
@@ -268,7 +327,10 @@ if True:
 
         #self.log("CHECK %s" % self.url)
         if self.checkForUpdate(message):
-            invokeUpdate()
+            try:
+                invokeUpdate()
+            except Exception as err:
+                self.log('{"Err: ": %s}' % err)
             return False
 
         if self.checkForPreferences(message):
