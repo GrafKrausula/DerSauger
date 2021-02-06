@@ -1,6 +1,7 @@
 import traceback
 import subprocess
 from subprocess import Popen, PIPE
+from subprocess import Popen, CREATE_NEW_CONSOLE
 import pathlib
 from pathlib import Path
 import zipfile
@@ -14,20 +15,6 @@ import urllib.request
 import shutil
 import queue
 import time
-
-def makedir(convertpath,new_fldr_name):
-
-    new_fldr_name = new_fldr_name.upper()
-
-    new_fldr = f'{convertpath}\{new_fldr_name}'
-    #print(new_fldr)
-
-    try:
-      os.makedirs(new_fldr) ## it creates the destination folder in capslock
-    except:
-      send_message('{"Info": current_thread: %s}' % new_fldr_name)
-
-    return new_fldr
 
 def get_scriptpath():
 
@@ -46,31 +33,30 @@ class Downloader:
 
         self.installpath = installpath
         zipfilepath = installpath + "/UPDATE_DerSauger.zip"
-
+        print('{"Info": zipfilepath: %s}' % zipfilepath)
 
         self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath)
-        print('{"Info": zipfilepath: %s}' % zipfilepath)
-        download = self.unzip(zipfilepath,installpath)
-        print('{"Info": download: %s}' % download)
+
+        unzippedfile = self.unzip(zipfilepath,installpath)
+        print('{"Info": download: %s}' % unzippedfile)
 
         self.unzippath = installpath + "\DerSauger-main"
         ##nach dem unzippen die zip datei löschen
         os.remove(zipfilepath)
-
         ##oder auch: extensionpath = self.unzippath + "\Der Sauger"
         self.extensionpath = installpath + "\DerSauger-main\Der Sauger"
-
         #Verschiebt den subordner "Der Sauger" aus "DerSauger-main" in das parentdirectory sprich installationsverzeichnis
         shutil.move(self.extensionpath, installpath)
-
         #Update den extensionpath auf die neue location nach der veschriebung
         self.extensionpath = installpath + "\Der Sauger"
-
+        #entfernt die entpackte, nun leere parent datei der extension
         shutil.rmtree(self.unzippath)
 
         return True
 
     def download(self,url,file_name):
+
+        print('{"Info": Downloading. Please wait and do not close this window...}')
 
         try:
             with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
@@ -84,6 +70,8 @@ class Downloader:
             return False
 
     def unzip(self,download_zip,installpath):
+
+        print('{"Info": Unzipping download...}')
 
         if zipfile.is_zipfile(download_zip):
 
@@ -111,6 +99,8 @@ class DeployedPathvariables:
 
     def check_pathvariables(self):
 
+        print('{"Info": Checking for missing pathvariables...}')
+
         if self.are_pathvariables_complete() == False:
             self.add_missing_pathvariable()
             self.check_pathvariables()
@@ -120,8 +110,8 @@ class DeployedPathvariables:
     def are_pathvariables_complete(self):
 
         #installcmd = f'cmd /c "cd /d {get_installpath()}'
-
-        proc1 = subprocess.Popen("cmd /c SET PATH",stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
+        cmd = 'cmd /c for /f "usebackq tokens=2,*" %A in (`reg query HKCU\Environment /v PATH`) do set my_user_path=%B'
+        proc1 = subprocess.Popen(cmd,stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
 
         while True:
             cmdState = proc1.poll()
@@ -153,6 +143,9 @@ class DeployedPathvariables:
             return False
 
     def add_missing_pathvariable(self):
+
+        print('{"Info": Adding missing pathvariables...}')
+
         if self.ffmpeg == False:
             self.add_ffmpeg_path()
         if self.youtube == False:
@@ -204,11 +197,11 @@ def Main():
     downloader = Downloader()
     downloader.download_and_unzip(installpath)
 
-
-
     dpv = DeployedPathvariables(downloader.get_extensionpath())
     dpv.check_pathvariables()
+    dpv.add_registry()
 
+    #readme öffnen
 
     x = input("Finished. Press Any key to exit...")
 
