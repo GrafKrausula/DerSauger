@@ -7,16 +7,8 @@ TODO:
 
 Installer überarbeiten:
 
-https://stackoverflow.com/questions/5327495/list-all-environment-variables-from-the-command-line 
--> cmd: SET PATH
-	zeigt alle PATH variablen an -> diese müssen gepiped und untersucht werden ob ffmpeg oder youtubeDL vorhanden sind
+Das SET Path in are_pathvariables_complete() zeigt nicht die frisch durch add_ffmpeg_path() oder add_youtube_path() hinzugefügten pfadvariablen an
 
-Wenn nein:
-https://stackoverflow.com/questions/9546324/adding-a-directory-to-the-path-environment-variable-in-windows
--> cmd: setx (usw.) 
-	um eine pfadvariable permanent hinzuzufügen, in diesem fall youtube dl oder ffmpeg
-
-noch einmal alles kontrollieren, zack fertig
 
 Updater schreiben:
 
