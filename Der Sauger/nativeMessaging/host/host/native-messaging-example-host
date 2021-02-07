@@ -222,17 +222,18 @@ def read_thread_func(queue):
 def invokeUpdate():
 
     scriptparent_path = getScriptPath().replace("\Der Sauger","")
-    tempdownload_folder = makedir(scriptparent_path,"temp")
-    downloadfile_path = tempdownload_folder + "/UPDATE_DerSauger.zip"
+    tempdownload_folder = makedir(scriptparent_path,"temp-sauger")
+    zipfile_path = tempdownload_folder + "/UPDATE_DerSauger.zip"
     send_message('{"Info": scriptparent_path: %s}' % scriptparent_path)
     send_message('{"Info": tempdownload_folder: %s}' % tempdownload_folder)
-    send_message('{"Info": downloadfile_path: %s}' % downloadfile_path)
+    send_message('{"Info": downloadfile_path: %s}' % zipfile_path)
 
-    downloadUpdate("https://github.com/GrafKrausula/DerSauger/archive/main.zip", downloadfile_path)
-    send_message('{"Info": downloadfile_path: %s}' % downloadfile_path)
-    download = unzipUpdate(downloadfile_path,tempdownload_folder)
+    downloadUpdate("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfile_path)
+    send_message('{"Info": zipfile_path: %s}' % zipfile_path)
+    download = unzipUpdate(zipfile_path,tempdownload_folder)
     send_message('{"Info": download: %s}' % download)
-    installUpdate(download)
+
+    installUpdate(tempdownload_folder,scriptparent_path) #(Von Argument 1, zu Argument 2)
 
     return True
 
@@ -259,9 +260,36 @@ def unzipUpdate(download_zip,folder):
     else:
         return False
 
-def installUpdate(download):
+def installUpdate(tempdownload_folder,destination_path):
+
+    current_version_path = f'{destination_path}\Der Sauger'
+    update_path = searchUpdate(tempdownload_folder)
+    send_message('{"Info": installUpdate(): update_path: %s}' % update_path)
+
+    send_message('{"Info": installUpdate(): current_version_path: %s}' % current_version_path)
+    send_message('{"Info": installUpdate(): destination_path: %s}' % destination_path)
+
+    shutil.rmtree(current_version_path)
+    shutil.move(update_path, destination_path)
+    shutil.rmtree(tempdownload_folder)
 
     return True
+
+def searchUpdate(update_folder):
+
+    allfiles = os.listdir(update_folder)
+    update_folder_path = None
+
+    send_message('{"Info": searchUpdate(): allfiles: %s}' % allfiles)
+    for file in allfiles:
+        if ("DerSauger" in file) and not ("UPDATE_DerSauger.zip" in file):
+            send_message('{"Info": UPDATE FOLDER FOUND: %s}' % file)
+            update_folder_path = f'{update_folder}\{file}'
+            update_path = f'{update_folder_path}\Der Sauger'
+
+            return update_path
+
+    return None
 
 
 def debug(self,func,input):
@@ -271,6 +299,7 @@ def debug(self,func,input):
   except Exception as err:
     self.log("ERR %s" % err)
     return False
+
 
 if True:
   class NativeMessagingWindow():
