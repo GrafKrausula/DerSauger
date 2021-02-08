@@ -90,8 +90,11 @@ class Updater:
         print('{"Info": installUpdate(): current_version_path: %s}' % current_version_path)
         print('{"Info": installUpdate(): destination_path: %s}' % destination_path)
 
+        os.chdir('/')
         shutil.rmtree(current_version_path)
+        os.chdir('/')
         shutil.move(update_path, destination_path)
+        os.chdir('/')
         shutil.rmtree(tempdownload_folder)
 
         return True

@@ -227,7 +227,9 @@ def startUpdater():
     updatercopy_path = copyUpdater()
     send_message('{"Info": startUpdater() updatercopy_path: %s}' % updatercopy_path)
 
+    os.chdir('/')
     os.startfile(updatercopy_path)
+    os.chdir('/')
 
     send_message('{"Info": os.system(updatercopy_path) started}')
     #verschiebt den updater aus diesem ordner in den überordner
@@ -481,6 +483,7 @@ if True:
     def exit(self):
         self.log('{"Info": Exitting the following thread}')
         if is_main_thread():
+            os.chdir('/')
             sys.exit(0)
         else:
             self.log("All threads %s" % count_all_threads())
