@@ -7,6 +7,8 @@ from pathlib import Path
 import zipfile
 from zipfile import ZipFile
 from os import walk
+from os import remove
+from sys import argv
 import os, shutil, glob
 import sys
 import threading
@@ -125,6 +127,7 @@ def Main():
     #readme öffnen
 
     x = input("Finished. Press Any key to exit...")
+    remove(argv[0]) #removes the .py file
 
 
 if __name__ == '__main__':

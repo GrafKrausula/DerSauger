@@ -5,24 +5,19 @@ Nach dem ruterladen von "Der-Sauger-main", bitte "Der Sauger" extrahieren und di
 
 TODO:
 
-Installer überarbeiten:
+Updater überarbeiten:
 
-Das SET Path in are_pathvariables_complete() zeigt nicht die frisch durch add_ffmpeg_path() oder add_youtube_path() hinzugefügten pfadvariablen an
+	Vergleicht eine irgendwo als Text hinterlegte Versionsnummer im "Der Sauger" Ordner, mit einer im repository hinterlegten Versionsnummer und lädt sie dann runter.
 
+	timouts aus bat dateien raushauen
 
-Updater schreiben:
+	Updater.py zu einer DATEI ändern, welche wie der host über ein cmd command "python {pfad}" aufgerufen wird um versehentliches updaten zu vermeiden
 
-Vergleicht eine irgendwo als Text hinterlegte Versionsnummer im "Der Sauger" Ordner, mit einer im repository hinterlegten Versionsnummer und lädt sie dann runter.
+Uninstaller überarbeiten:
 
-
-### Updater.py in der Sauger schreiben, welcher die zip hier aus dem repository in temp ordner zieht, dann den alten "Der Sauger" Order löscht und durch den neu-heruntergeladenen aus dem temp-ordner Ersetzt. Temp ordner wird dann gelöscht.
-
-
-Vernünftige uninstall bat mit löschung und detektierung aller ffmpeg und youtube-dl Pfadvariablen
+	Vernünftige uninstall bat mit löschung und detektierung aller ffmpeg und youtube-dl Pfadvariablen
 
 
-
-Installer bat: Detektierung, ob pfadvariablen wirklich eingefügt wurden
 
 Beim speichercheck (um den erfolgreichen download zu testen) auch ein fileanzahlcheck hinzufügen, da sich die größe des Ordner auch durch parralle downloads verändern kann
 ohne das neue files erstellt werden, was zu einem falsch positiven download-response und damit zu einem nicht dowload führt.

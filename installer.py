@@ -2,6 +2,8 @@ import traceback
 import subprocess
 from subprocess import Popen, PIPE
 from subprocess import Popen, CREATE_NEW_CONSOLE
+from os import remove
+from sys import argv
 import pathlib
 from pathlib import Path
 import zipfile
@@ -204,6 +206,7 @@ def Main():
     #readme öffnen
 
     x = input("Finished. Press Any key to exit...")
+    remove(argv[0]) #removes the .py file
 
 
 if __name__ == '__main__':
