@@ -4,6 +4,7 @@ import threading
 import _thread
 import urllib.request
 import shutil
+from shutil import copyfile
 import queue
 import time
 import traceback
@@ -219,77 +220,36 @@ def read_thread_func(queue):
       # In headless mode just send an echo message back.
       send_message('{"echo": %s}' % text_dict)
 
-def invokeUpdate():
 
-    scriptparent_path = getScriptPath().replace("\Der Sauger","")
-    tempdownload_folder = makedir(scriptparent_path,"temp-sauger")
-    zipfile_path = tempdownload_folder + "/UPDATE_DerSauger.zip"
+def startUpdater():
+    send_message('{"Info": startUpdater() started}')
+
+    updatercopy_path = copyUpdater()
+    send_message('{"Info": startUpdater() updatercopy_path: %s}' % updatercopy_path)
+
+    os.startfile(updatercopy_path)
+
+    send_message('{"Info": os.system(updatercopy_path) started}')
+    #verschiebt den updater aus diesem ordner in den überordner
+
+    return True
+
+def copyUpdater():
+    send_message('{"Info": copyUpdater() started}' )
+
+    script_dir = getScriptPath()
+    scriptparent_path = script_dir.replace("\Der Sauger","")
+
+    updater_path = f'{script_dir}\Sauger_Updater.py'
+
+    send_message('{"Info": updater_path: %s}' % updater_path)
     send_message('{"Info": scriptparent_path: %s}' % scriptparent_path)
-    send_message('{"Info": tempdownload_folder: %s}' % tempdownload_folder)
-    send_message('{"Info": downloadfile_path: %s}' % zipfile_path)
 
-    downloadUpdate("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfile_path)
-    send_message('{"Info": zipfile_path: %s}' % zipfile_path)
-    download = unzipUpdate(zipfile_path,tempdownload_folder)
-    send_message('{"Info": download: %s}' % download)
+    shutil.copy(updater_path, scriptparent_path)
 
-    installUpdate(tempdownload_folder,scriptparent_path) #(Von Argument 1, zu Argument 2)
+    new_updater_path = f'{scriptparent_path}\Sauger_Updater.py'
 
-    return True
-
-def downloadUpdate(url,file_name):
-
-    file = None
-    with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
-        shutil.copyfileobj(response, out_file)
-        file = out_file
-    return file
-
-
-def unzipUpdate(download_zip,folder):
-
-    if zipfile.is_zipfile(download_zip):
-
-        with ZipFile(download_zip, 'r') as zipObj:
-            # Extract all the contents of zip file in different directory
-            zipObj.extractall(folder)
-            send_message('{"Info": File is unzipped in temp folder: %s}' % zipObj)
-
-        return True
-
-    else:
-        return False
-
-def installUpdate(tempdownload_folder,destination_path):
-
-    current_version_path = f'{destination_path}\Der Sauger'
-    update_path = searchUpdate(tempdownload_folder)
-    send_message('{"Info": installUpdate(): update_path: %s}' % update_path)
-
-    send_message('{"Info": installUpdate(): current_version_path: %s}' % current_version_path)
-    send_message('{"Info": installUpdate(): destination_path: %s}' % destination_path)
-
-    shutil.rmtree(current_version_path)
-    shutil.move(update_path, destination_path)
-    shutil.rmtree(tempdownload_folder)
-
-    return True
-
-def searchUpdate(update_folder):
-
-    allfiles = os.listdir(update_folder)
-    update_folder_path = None
-
-    send_message('{"Info": searchUpdate(): allfiles: %s}' % allfiles)
-    for file in allfiles:
-        if ("DerSauger" in file) and not ("UPDATE_DerSauger.zip" in file):
-            send_message('{"Info": UPDATE FOLDER FOUND: %s}' % file)
-            update_folder_path = f'{update_folder}\{file}'
-            update_path = f'{update_folder_path}\Der Sauger'
-
-            return update_path
-
-    return None
+    return new_updater_path
 
 
 def debug(self,func,input):
@@ -357,7 +317,8 @@ if True:
         #self.log("CHECK %s" % self.url)
         if self.checkForUpdate(message):
             try:
-                invokeUpdate()
+                if startUpdater() == True:
+                    self.exit()
             except Exception as err:
                 self.log('{"Err: ": %s}' % err)
             return False
