@@ -1,8 +1,0 @@
-python
-Youtube-dl.exe
-ffmpeg.exe o.ä.
-python script wavin all vids o.ä.
-
-Für installieren:
-
-Script schreiben dass python, ffmpeg.exe und youtube-dl.exe zu den path variablen hinzufügt

@@ -1,9 +1,36 @@
 # DerSauger
 
-Nach dem ruterladen von "Der-Sauger-main", bitte "Der Sauger" extrahieren und die weiteren schritte der darin befindlichen README folgen. 
+Installieren:
 
+1. python 3.8 oder höhere version im windows app store installieren
+
+2. NUR Installer.py runterladen:
+	2.1 -> https://raw.githubusercontent.com/GrafKrausula/DerSauger/main/installer.py aufrufen
+	2.2 -> auf der in 2.1 aufgerufenen Seite STRG+S drücken
+	2.3 -> Installer.py an FINALEM Speicherort speichern, sprich in der Ordner in dem am ende die Chrome Extension "Der Sauger" installiert werden soll
+
+!!!! WARNUNG !!!! Installer.py muss ZWINGEND dort ausgeführt werden wo ihr den Sauger gespeichert haben wollt. Also spätestens jetzt die Datei in FINALEN Speicherort schieben !!!!
+
+3. Am FINALEN Speicherort Installer.py ausführen
+
+
+
+
+
+
+
+
+
+######################################################################################################################################################################################
 
 TODO:
+
+Installer überarbeiten:
+
+	registry suche nach schon vorhandenen saugern und diese deinstallieren
+	
+	suche nach schon vorhandenen, aber deplatzierten pfadvariablen und löschung derer
+
 
 Updater überarbeiten:
 

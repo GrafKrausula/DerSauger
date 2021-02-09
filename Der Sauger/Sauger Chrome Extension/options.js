@@ -1,5 +1,15 @@
 // Saves options to chrome.storage
 //chrome.downloads.showDefaultFolder()
+
+chrome.runtime.onInstalled.addListener(function(details){
+    if(details.reason == "install"){
+      restore_options()
+        //call a function to handle a first install
+    }else if(details.reason == "update"){
+        //call a function to handle an update
+    }
+});
+
 function save_options() {
   var format = document.getElementById('format').value;
   var convert = document.getElementById('convert').checked;

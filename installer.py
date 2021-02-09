@@ -22,6 +22,11 @@ def get_scriptpath():
 
     scriptpath = str(pathlib.Path(__file__).parent.absolute())
     return scriptpath
+def open_readme(installpath):
+
+    os.chdir('/')
+    os.startfile(f'"{installpath}\Der Sauger\README.txt"')
+    os.chdir('/')
 
 class Downloader:
     def __init__(self):
@@ -203,9 +208,10 @@ def Main():
     dpv.check_pathvariables()
     dpv.add_registry()
 
-    #readme öffnen
-
     x = input("Finished. Press Any key to exit...")
+
+    open_readme(installpath)
+
     remove(argv[0]) #removes the .py file
 
 
