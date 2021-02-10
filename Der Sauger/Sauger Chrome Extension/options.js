@@ -1,15 +1,6 @@
 // Saves options to chrome.storage
 //chrome.downloads.showDefaultFolder()
 
-chrome.runtime.onInstalled.addListener(function(details){
-    if(details.reason == "install"){
-      restore_options()
-        //call a function to handle a first install
-    }else if(details.reason == "update"){
-        //call a function to handle an update
-    }
-});
-
 function save_options() {
   var format = document.getElementById('format').value;
   var convert = document.getElementById('convert').checked;
@@ -63,15 +54,20 @@ function get_options() {
     CNVtpath: convertpath,
     DLpath: downloadpath
   }, function(items) {
-    document.getElementById('format').value = items.favouriteFormat;
-    document.getElementById('convert').checked = items.wantsConvert;
-    document.getElementById('convertpath').value = items.CNVtpath;
-    document.getElementById('downloadpath').value = items.DLpath;
-    var status = document.getElementById('status');
-    status.textContent = 'Status: Options Loaded.';
-    setTimeout(function() {
-      status.textContent = 'Status: ';
-    }, 1550);
+    if (items.CNVtpath === null | items.CNVtpath === undefined){
+      restore_options()
+    }else{
+
+      document.getElementById('format').value = items.favouriteFormat;
+      document.getElementById('convert').checked = items.wantsConvert;
+      document.getElementById('convertpath').value = items.CNVtpath;
+      document.getElementById('downloadpath').value = items.DLpath;
+      var status = document.getElementById('status');
+      status.textContent = 'Status: Options Loaded.';
+      setTimeout(function() {
+        status.textContent = 'Status: ';
+      }, 1550);
+    }
   });
 }
 
@@ -97,6 +93,30 @@ function restore_options_KRSE() {
   get_options()
 }
 
+function set_null() {
+  // Use default value color = 'red' and likesColor = true.
+  chrome.storage.sync.set({
+    favouriteFormat: undefined,
+    wantsConvert: undefined,
+    CNVtpath: true,
+    DLpath: undefined
+  }, function(items) {
+    document.getElementById('format').value = items.favouriteFormat;
+    document.getElementById('convert').checked = items.wantsConvert;
+    document.getElementById('convertpath').value = items.CNVtpath;
+    document.getElementById('downloadpath').value = items.DLpath;
+    var status = document.getElementById('status');
+    status.textContent = 'Status: Options Reset.';
+    setTimeout(function() {
+      //chrome.extension.getBackgroundPage().window.location.reload()
+      status.textContent = 'Status: ';
+    }, 1050);
+  });
+  get_options()
+  //save_options()
+}
+
+
 function update_script() {
   alert("function update_script()")
   chrome.runtime.sendMessage({Message: "UPDATE"})
@@ -106,7 +126,7 @@ function update_script() {
 
 document.addEventListener('DOMContentLoaded', get_options);
 document.getElementById('reset').addEventListener('click',
-    restore_options);
+    set_null);
 document.getElementById('save').addEventListener('click',
     save_options);
 document.getElementById('KRSE').addEventListener('click',
