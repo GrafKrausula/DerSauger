@@ -54,7 +54,7 @@ function get_options() {
     CNVtpath: convertpath,
     DLpath: downloadpath
   }, function(items) {
-    if (items.CNVtpath === null | items.CNVtpath === undefined){
+    if (items.CNVtpath === null | items.CNVtpath === undefined | items.CNVtpath === '[object Object]'){
       restore_options()
     }else{
 
