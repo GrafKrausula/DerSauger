@@ -80,15 +80,18 @@ function get_options() {
       restore_options()
     }else{
 
+      var status = document.getElementById('status');
+      status.textContent = JSON.stringify(items);
+
       document.getElementById('format').value = items.favouriteFormat;
       document.getElementById('convert').checked = items.wantsConvert;
       document.getElementById('convertpath').value = items.CNVtpath;
       document.getElementById('downloadpath').value = items.DLpath;
-      var status = document.getElementById('status');
-      status.textContent = 'Status: Options Loaded.';
+
+      //status.textContent = 'Status: Options Loaded.';
       setTimeout(function() {
         status.textContent = 'Status: ';
-      }, 1550);
+      }, 10550);
     }
   });
 }
