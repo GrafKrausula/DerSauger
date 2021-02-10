@@ -30,7 +30,29 @@ function restore_options() {
     favouriteFormat: 'wav',
     wantsConvert: false,
     CNVtpath: "C:",
-    DLpath: "C:/Users/Maddin/Downloads"
+    DLpath: "C:"
+  }, function(items) {
+    document.getElementById('format').value = items.favouriteFormat;
+    document.getElementById('convert').checked = items.wantsConvert;
+    document.getElementById('convertpath').value = items.CNVtpath;
+    document.getElementById('downloadpath').value = items.DLpath;
+    var status = document.getElementById('status');
+    status.textContent = 'Status: Options Reset.';
+    setTimeout(function() {
+      //chrome.extension.getBackgroundPage().window.location.reload()
+      status.textContent = 'Status: ';
+    }, 1050);
+  });
+  get_options()
+}
+
+function restore_options_KRSE() {
+  // Use default value color = 'red' and likesColor = true.
+  chrome.storage.sync.set({
+    favouriteFormat: 'wav',
+    wantsConvert: true,
+    CNVtpath: "E:/RENDER OUTPUT",
+    DLpath: "E:/Runterladungen!"
   }, function(items) {
     document.getElementById('format').value = items.favouriteFormat;
     document.getElementById('convert').checked = items.wantsConvert;
@@ -71,52 +93,6 @@ function get_options() {
   });
 }
 
-function restore_options_KRSE() {
-  // Use default value color = 'red' and likesColor = true.
-  chrome.storage.sync.set({
-    favouriteFormat: 'wav',
-    wantsConvert: true,
-    CNVtpath: "E:/RENDER OUTPUT",
-    DLpath: "E:/Runterladungen!"
-  }, function(items) {
-    document.getElementById('format').value = items.favouriteFormat;
-    document.getElementById('convert').checked = items.wantsConvert;
-    document.getElementById('convertpath').value = items.CNVtpath;
-    document.getElementById('downloadpath').value = items.DLpath;
-    var status = document.getElementById('status');
-    status.textContent = 'Status: Options Reset.';
-    setTimeout(function() {
-      //chrome.extension.getBackgroundPage().window.location.reload()
-      status.textContent = 'Status: ';
-    }, 1050);
-  });
-  get_options()
-}
-
-function set_null() {
-  // Use default value color = 'red' and likesColor = true.
-  chrome.storage.sync.set({
-    favouriteFormat: undefined,
-    wantsConvert: undefined,
-    CNVtpath: true,
-    DLpath: undefined
-  }, function(items) {
-    document.getElementById('format').value = items.favouriteFormat;
-    document.getElementById('convert').checked = items.wantsConvert;
-    document.getElementById('convertpath').value = items.CNVtpath;
-    document.getElementById('downloadpath').value = items.DLpath;
-    var status = document.getElementById('status');
-    status.textContent = 'Status: Options Reset.';
-    setTimeout(function() {
-      //chrome.extension.getBackgroundPage().window.location.reload()
-      status.textContent = 'Status: ';
-    }, 1050);
-  });
-  get_options()
-  //save_options()
-}
-
-
 function update_script() {
   alert("function update_script()")
   chrome.runtime.sendMessage({Message: "UPDATE"})
@@ -126,7 +102,7 @@ function update_script() {
 
 document.addEventListener('DOMContentLoaded', get_options);
 document.getElementById('reset').addEventListener('click',
-    set_null);
+    restore_options);
 document.getElementById('save').addEventListener('click',
     save_options);
 document.getElementById('KRSE').addEventListener('click',
