@@ -76,19 +76,22 @@ function get_options() {
     CNVtpath: convertpath,
     DLpath: downloadpath
   }, function(items) {
-    if (items.CNVtpath === null | items.CNVtpath === undefined | items.CNVtpath === '[object Object]'){
+    var items_str = JSON.stringify(items);
+    var status = document.getElementById('status');
+
+    if (items_str.includes("true") === false && items_str.includes("false") === false){ //wenn kein wert in wantsConvert, dann ist die variable wahrscheilich nicht existent.
+      status.textContent = "Status: No options found. Restoring options.";
       restore_options()
     }else{
 
-      var status = document.getElementById('status');
-      status.textContent = JSON.stringify(items);
+      //status.textContent = items_str;
 
       document.getElementById('format').value = items.favouriteFormat;
       document.getElementById('convert').checked = items.wantsConvert;
       document.getElementById('convertpath').value = items.CNVtpath;
       document.getElementById('downloadpath').value = items.DLpath;
 
-      //status.textContent = 'Status: Options Loaded.';
+      status.textContent = 'Status: Options Loaded.';
       setTimeout(function() {
         status.textContent = 'Status: ';
       }, 10550);
