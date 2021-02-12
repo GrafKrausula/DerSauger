@@ -5,4 +5,3 @@ for /f "usebackq tokens=2,*" %%A in (`reg query HKCU\Environment /v PATH`) do se
 
 setx PATH "%~dp0ffmpeg\bin;%my_user_path%"
 
-timeout 5

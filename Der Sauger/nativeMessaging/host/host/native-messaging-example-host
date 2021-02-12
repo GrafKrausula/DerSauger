@@ -316,6 +316,16 @@ if True:
         #self.log(f"ThreadsCount: %s CMDThreads:{self.threads}" % threading.active_count())
         self.log("Recieved: %s" % message)
 
+        #Wenn optionen nicht initialisert worden sind
+        if json.dumps(message) == "{}":
+            self.log('{"Info": Message = {}, Aborting Programm}')
+            #Errorhandler###############################
+            ########os.chdir('/')
+            ########os.system(r'cmd echo ERROR 101. Please open the Sauger options once in your Browser. You can close this window now.' )
+            ########os.chdir('/')
+            #Errorhandler###############################
+            self.exit()
+
         #self.log("CHECK %s" % self.url)
         if self.checkForUpdate(message):
             try:
