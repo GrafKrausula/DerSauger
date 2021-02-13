@@ -208,7 +208,7 @@ def Main():
     dpv.check_pathvariables()
     dpv.add_registry()
 
-    x = input("Finished. Press Any key to exit...")
+    x = input("Finished. Press ENTER to exit...")
 
     open_readme(installpath)
 
@@ -226,4 +226,4 @@ if __name__ == '__main__':
 
         traceback.print_exc()
         #print(err)
-        x = input("An error occured! Press Any key to exit...")
+        x = input("An error occured! Press ENTER to exit...")

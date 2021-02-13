@@ -267,4 +267,4 @@ if __name__ == '__main__':
 
         traceback.print_exc()
         #print(err)
-        x = input("An error occured! Press Any key to exit...")
+        x = input("An error occured! Press ENTER to exit...")
