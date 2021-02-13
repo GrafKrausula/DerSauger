@@ -14,9 +14,14 @@ SOEBEN INSTALLIERTE EXTENSION ZU CHROME HINZUFÜGEN:
 
 6. Rechtsklick auf "Der Sauger" Symbol neben Adressleiste und Linksklick auf Optionen
 
-7. Einstellungen nach belieben wählen und auf "OK" drücken
+7. Einstellungen nach belieben wählen und auf "SAVE" drücken; Enter funktioniert hier nicht!
+	-> Info: Für konvertierung wird ein ordner erstellt, für downloaded files nicht
 
-8. Fröhlich mit STRG+SPACEBAR das internedz leer saugen
+8. chrome://extensions/shortcuts in die Adressleiste kopieren bzw. als Url verwenden und Enter drücken
+
+9. Bei "Der Sauger" unter "Direktes Sauging" STRG+Leertaste oder andere beliebige Tastenkombination als Hotkey hinzuzufügen
+
+10. Fröhlich mit STRG+SPACEBAR o.ä. das internedz leer saugen
 
 
  
