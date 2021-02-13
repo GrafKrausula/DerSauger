@@ -1,5 +1,5 @@
 taskkill /f /im explorer.exe
 
-explorer.exe
+start explorer.exe
 
 timeout 1

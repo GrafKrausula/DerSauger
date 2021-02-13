@@ -219,7 +219,7 @@ def Main():
     dpv = DeployedPathvariables(downloader.get_extensionpath())
     dpv.check_pathvariables()
     dpv.add_registry()
-    dpv.restart_explorer()
+    #dpv.restart_explorer()
 
     x = input("Finished. Press ENTER to exit...")
 

@@ -21,9 +21,10 @@ SOEBEN INSTALLIERTE EXTENSION ZU CHROME HINZUFÜGEN:
 
 9. Bei "Der Sauger" unter "Direktes Sauging" STRG+Leertaste oder andere beliebige Tastenkombination als Hotkey hinzuzufügen
 
-10. Fröhlich mit STRG+SPACEBAR o.ä. das internedz leer saugen
+10. Rechner neustarten
 
-(11.) Falls sich nichts tut: Erst chrome neustarten, wenn das nichts bringt; den rechner Neustarten.
+11. Fröhlich mit STRG+SPACEBAR o.ä. das internedz leer saugen
+
  
 
 
