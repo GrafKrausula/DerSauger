@@ -196,6 +196,18 @@ class DeployedPathvariables:
 
         return False
 
+    def restart_explorer(self):
+
+        proc1 = subprocess.Popen(f'{self.extensionpath}\Reloadpath.bat',stderr=subprocess.STDOUT)
+        while True:
+            cmdState = proc1.poll()
+            #print(cmdState)
+            if cmdState != None:
+                print("registry key added")
+                return True;
+
+        return False
+
 
 def Main():
 
@@ -207,6 +219,7 @@ def Main():
     dpv = DeployedPathvariables(downloader.get_extensionpath())
     dpv.check_pathvariables()
     dpv.add_registry()
+    dpv.restart_explorer()
 
     x = input("Finished. Press ENTER to exit...")
 

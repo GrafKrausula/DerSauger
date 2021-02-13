@@ -9,10 +9,14 @@ Installieren:
 	2.1 -> https://raw.githubusercontent.com/GrafKrausula/DerSauger/main/installer.py aufrufen
 	
 	2.2 -> auf der in 2.1 aufgerufenen Seite STRG+S drücken
+
+		-> falls vorhanden, das ".txt" aus dem speicherpfad löschen
 	
 	2.3 -> Installer.py an FINALEM Speicherort speichern, sprich in der Ordner in dem am ende die Chrome Extension "Der Sauger" installiert werden soll
 
 !!!! WARNUNG !!!! Installer.py muss ZWINGEND dort ausgeführt werden wo ihr den Sauger gespeichert haben wollt. Also spätestens jetzt die Datei in FINALEN Speicherort schieben !!!!
+
+++++++++ Während der installation werden alle offenen explorer.exe Fenster geschlossen +++++++++
 
 3. Am FINALEN Speicherort Installer.py ausführen
 
