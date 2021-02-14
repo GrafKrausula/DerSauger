@@ -2,7 +2,7 @@
 
 Installieren:
 
-1. python 3.8 oder höhere version im windows app store installieren
+1. python 3.8 oder höhere version im microsoft store installieren
 
 2. NUR Installer.py runterladen:
 
