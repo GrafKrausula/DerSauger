@@ -66,6 +66,25 @@ async function sendPreferences() {
   });
 }
 
+
+async function sendFixedPreferences(command) {
+  // Use default value color = 'red' and likesColor = true.
+  chrome.storage.sync.get([
+    "favouriteFormat", //das rote ist der speicherkey, das weißte die zu speichernde variable
+    "wantsConvert",
+    'CNVtpath',
+    'DLpath'],
+    async function(items) {
+    format = command;
+    convert = items.wantsConvert;
+    downloadpath = items.DLpath;
+    convertpath = items.CNVtpath;
+    message = {format, convert, downloadpath, convertpath};
+    await send(message)
+    getAndSendUrl()
+  });
+}
+
 async function invokeUpdate(){
   await send("invokeUpdate")
 }
@@ -83,6 +102,15 @@ async function getAndSendUrl(){
 chrome.commands.onCommand.addListener(async function(command) {
   if(command == "toggle"){
     sendPreferences() //sendet url und präferenzen
+  }
+  if(command == "wav"){
+    sendFixedPreferences(command) //sendet url und präferenzen
+  }
+  if(command == "mp3"){
+    sendFixedPreferences(command) //sendet url und präferenzen
+  }
+  if(command == "mp4"){
+    sendFixedPreferences(command) //sendet url und präferenzen
   }
 });
 

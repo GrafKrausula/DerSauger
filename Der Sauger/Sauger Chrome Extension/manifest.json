@@ -23,6 +23,27 @@
           "default": "Ctrl+Space",
           "mac": "MacCtrl+Space"
         }
+      },
+      "wav": {
+        "description": "Direktes Sauging und WAV-konvertiering",
+        "suggested_key": {
+          "default": "Shift+Alt+W",
+          "mac": "Shift+Alt+W"
+        }
+      },
+      "mp3": {
+        "description": "Direktes Sauging und mp3-konvertiering",
+        "suggested_key": {
+          "default": "Shift+Alt+3",
+          "mac": "Shift+Alt+3"
+        }
+      },
+      "mp4": {
+        "description": "Direktes Sauging und mp4-konvertiering",
+        "suggested_key": {
+          "default": "Shift+Alt+4",
+          "mac": "Shift+Alt+4"
+        }
       }
   },
   "icons": {
