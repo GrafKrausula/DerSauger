@@ -3,8 +3,10 @@
 Installieren:
 
 1. python 3.8 oder höhere version im "Microsoft Store" (App auf jedem Windows 10 Rechner vorhanden und durch suchfeld auffindbar) installieren. 
-	
-	-> Alternativ auch über https://www.python.org/downloads/ runterzuladen, hier UNBEDINGT "Add Python 3.X to PATH" auswählen/Häkchen setzen.
+
+ODER:
+
+1. python 3.8 oder höhere version auch über https://www.python.org/downloads/ runterzuladen, hier UNBEDINGT "Add Python 3.X to PATH" auswählen/Häkchen setzen.
 
 ---------------------------------------------------------------
 
