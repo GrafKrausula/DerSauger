@@ -6,7 +6,7 @@ Installieren:
 
 ODER:
 
-1. python 3.8 oder höhere version auch über https://www.python.org/downloads/ runterzuladen, hier UNBEDINGT "Add Python 3.X to PATH" auswählen/Häkchen setzen.
+1. python 3.8 oder höhere version über https://www.python.org/downloads/ runterladen und ausführen, hier UNBEDINGT "Add Python 3.X to PATH" auswählen/Häkchen setzen.
 
 ---------------------------------------------------------------
 
