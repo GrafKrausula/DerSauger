@@ -10,7 +10,7 @@ Installieren:
 	
 	2.2 -> auf der in 2.1 aufgerufenen Seite STRG+S drücken
 
-		-> falls vorhanden, das ".txt" aus dem speicherpfad löschen
+		-> 2.2.1 falls vorhanden, das ".txt" aus dem speicherpfad löschen
 	
 	2.3 -> Installer.py an FINALEM Speicherort speichern, sprich in der Ordner in dem am ende die Chrome Extension "Der Sauger" installiert werden soll
 
@@ -18,8 +18,11 @@ Installieren:
 
 ++++++++ Während der installation werden alle offenen explorer.exe Fenster geschlossen +++++++++
 
-3. Am FINALEN Speicherort Installer.py ausführen
 
+3. Am FINALEN Speicherort Installer.py ausführen, sprich doppelclick
+
+	-> 3.1 falls die jetzt auf eurer Festplatte gespeicherte Datei NICHT AUSFÜHRBAR ist (also keine .py endung haben sollte) muss diese manuell hinzugefügt werden, indem
+	ihr im Windows "Explorer" oben links "Ansicht" klickt, und dann oben rechts den Haken bei "Dateinamenerweiterungen" setzt. Jetzt könnt ihr einfach die Datei "installer" 	 in "installer.py" umbenennen.
 
 
 
