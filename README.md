@@ -19,7 +19,9 @@ Methode 1 - Entspannt:
 	
 	2.2 -> auf der in 2.1 aufgerufenen Seite STRG+S drücken
 
-		-> 2.2.1 falls vorhanden, das ".txt" aus dem speicherpfad "download_installer.bat.txt" löschen und "Dateityp" auf "Alle dateien" stellen
+		-> 2.2.1 falls vorhanden, das ".txt" aus dem speicherpfad "download_installer.bat.txt" löschen
+		   und "Dateityp" auf "Alle dateien" stellen
+		   
 		-> 2.2.2 An gewünschtem Speicherort auf "Speichern" klicken
 	
 	2.3 -> rechtsklick auf download_installer.bat und "Als Admninistrator ausführen", warten bis das fenster sich schließt und zum nächsten Schritt
