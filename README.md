@@ -46,7 +46,10 @@ Methode 2 - Weniger entspannt:
 	
 	2.2 -> auf der in 2.1 aufgerufenen Seite STRG+S drücken
 
-		-> 2.2.1 falls vorhanden, das ".txt" aus dem speicherpfad löschen
+		-> 2.2.1 falls vorhanden, das ".txt" aus dem speicherpfad "download_installer.bat.txt" löschen
+		   und "Dateityp" auf "Alle dateien" stellen
+		
+		-> 2.2.2 An gewünschtem Speicherort auf "Speichern" klicken
 	
 	2.3 -> Installer.py an FINALEM Speicherort speichern, sprich in der Ordner in dem am ende die Chrome Extension "Der Sauger" installiert werden soll
 
