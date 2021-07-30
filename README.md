@@ -24,7 +24,7 @@ Methode 1 - Entspannt:
 		   
 		-> 2.2.2 An gewünschtem Speicherort auf "Speichern" klicken
 	
-	2.3 -> rechtsklick auf download_installer.bat und "Als Admninistrator ausführen", warten bis das fenster sich schließt und zum nächsten Schritt
+	2.3 -> rechtsklick auf download_installer.bat und "Als Admninistrator ausführen", warten bis das fenster sich schließt. Im selben Ordner in der sich die eben                            ausgeführten "download_installer.bat" Datei befindet nach "Installer.py" suchen und zum nächsten Schritt
 	
 	2.4 -> Installer.py an FINALEN Speicherort verschieben, sprich in der Ordner in dem am ende die Chrome Extension "Der Sauger" installiert werden soll
 
