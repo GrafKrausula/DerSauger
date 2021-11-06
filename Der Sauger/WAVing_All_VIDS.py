@@ -139,7 +139,6 @@ def removeduplicatindestionation(destination,file):
         os.remove(destinationfile)
         print(f"DUPLICAT {file} REMOVED")
 
-
 def movefilestoroot(convertpath, downloadpath, filetypefolderlist,supportedfiletypes):
 
 
@@ -187,7 +186,6 @@ def movefiletofolder(filetype, src_fldr, destination):
         print(f"{err_count} MOVING ERROR(S) OCCURED")
         print(f"ERRORS: {errors}")
     if success_count > 0: print(f"{success_count} FILE(S) SUCCESFULLY MOVED")
-
 
 def movefilestofolders(convertpath,filetypefolderlist,supportedfiletypes):
 

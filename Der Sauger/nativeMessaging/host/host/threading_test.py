@@ -21,16 +21,7 @@ def createconvertcmd(url):
 
 
 def convertfiles(url):
-    #proc1 = subprocess.Popen(createconvertcmd(url),stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
-    #proc1 = subprocess.Popen(createconvertcmd(url),stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
-    #subprocess.run(["cmd.exe", "/c", "start", createconvertcmd(url)], timeout=15)
-    #convertcmd = f'cd /d {downloadpath}'
-    #convertcmd+= f' && youtube-dl -f bestvideo+bestaudio/best {url}'
 
-    #subprocess.run(["cmd.exe", "/c", "start", convertcmd], timeout=15)
-    #proc1 = subprocess.run(["cmd.exe", "/c","start", "youtube-dl -f bestvideo+bestaudio/best"])
-
-    #proc1 = subprocess.Popen(createconvertcmd(url), creationflags=CREATE_NEW_CONSOLE) #wörks
     proc1 = subprocess.Popen(f'youtube-dl -f bestvideo+bestaudio/best {url}', creationflags=CREATE_NEW_CONSOLE)
     stdoutdata, stderrdata = proc1.communicate()
     print(proc1.returncode)
@@ -48,8 +39,8 @@ def convertfiles(url):
     #        break;
 
 
-def worker(num):
-    """thread worker function"""
+def thread_main(num):
+    """thread_main function"""
 
     try:
         convertfiles(url)
@@ -59,14 +50,14 @@ def worker(num):
         #print(err)
         x = input("An error occured! Press Any key to exit...")
 
-    print('Worker: %s' % num)
+    print('thread_main: %s' % num)
     return
 
 threads = []
 url = "https://www.youtube.com/watch?v=dO7gB5ATJr8"
 downloadpath = "E:\Runterladungen!"
 for i in range(5):
-    t = threading.Thread(target=worker, args=(i,))
+    t = threading.Thread(target=thread_main, args=(i,))
     threads.append(t)
     t.start()
     print(threads)
