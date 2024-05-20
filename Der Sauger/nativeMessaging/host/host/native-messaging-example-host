@@ -220,9 +220,60 @@ def read_thread_func(queue):
       # In headless mode just send an echo message back.
       send_message('{"echo": %s}' % text_dict)
 
+def fetch_online_version(url):
+    try:
+        with urllib.request.urlopen(url) as response:
+            return response.read().decode('utf-8').strip()
+    except Exception as e:
+        send_message('{"Error fetching online version: %s"}' %e)
+        return None
+
+def read_local_version(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        send_message('{"Error": "Local version file not found."}')
+    except Exception as e:
+        send_message('{"Error reading local version: %s"}' %e)
+    return None
 
 def startUpdater():
     send_message('{"Info": startUpdater() started}')
+
+    # Extend functionality to update youtube-dl
+    try:
+        update_youtube_dl()
+    except Exception as e:
+        send_message('{"Error in update function: %s"}' %e)
+        create_crashlog('Error in update function: %s\n%s' %(e, traceback.format_exc()))
+
+    try:
+
+        local_version_path = os.path.join(getScriptPath(), 'version.txt')
+        send_message('{"Info": local_version_path = %s}' %local_version_path)
+        online_version_url = 'https://raw.githubusercontent.com/GrafKrausula/DerSauger/main/Der%20Sauger/version.txt'
+
+        local_version = read_local_version(local_version_path)
+        if local_version is None:
+            send_message('{"Info": "Local version is None, update will proceed."}')
+
+        online_version = fetch_online_version(online_version_url)
+        if online_version is None:
+            send_message('{"Info": "Online version is None, update cannot proceed."}')
+            return
+
+        if local_version != online_version:
+            send_message('{"Info": "local_version %s does not match with online_version %s , starting update..."}' % (local_version, online_version))
+            send_message('{"Info": "versions do not match, update needed, proceeding.."}')
+        else:
+            send_message('{"Info": "local_version %s matches with online_version %s , not updating..."}' % (local_version, online_version))
+            send_message('{"Info": "versions match, no update needed."}')
+            return True
+
+    except Exception as e:
+        send_message('{"Error in update function: %s"}' %e)
+        create_crashlog('Error in update function: %s\n%s' %(e, traceback.format_exc()))
 
     updatercopy_path = copyUpdater()
     send_message('{"Info": startUpdater() updatercopy_path: %s}' % updatercopy_path)
@@ -231,10 +282,63 @@ def startUpdater():
     os.startfile(updatercopy_path)
     os.chdir('/')
 
+
     send_message('{"Info": os.system(updatercopy_path) started}')
     #verschiebt den updater aus diesem ordner in den überordner
 
+
     return True
+
+'''
+def startUpdater():
+    send_message('{"Info": startUpdater() started}')
+
+    # Extend functionality to update youtube-dl
+    update_youtube_dl()
+
+    send_message('{"Info": local_version_path = %s}' %local_version_path)
+    local_version_path = os.path.join(getScriptPath(), 'Der Sauger', 'version.txt')
+    #local_version_path = local_version_path.replace("\Der Sauger","")
+    send_message('{"Info": local_version_path = %s}' %local_version_path)
+    online_version_url = 'https://raw.githubusercontent.com/GrafKrausula/DerSauger/main/Der%20Sauger/version.txt'
+
+    try:
+        local_version = read_local_version(local_version_path)
+        if local_version is None:
+            send_message('{"Info": "Local version is None, update will proceed."}')
+
+        online_version = fetch_online_version(online_version_url)
+        if online_version is None:
+            send_message('{"Info": "Online version is None, update cannot proceed."}')
+            return
+
+        if local_version != online_version:
+            send_message('{"Info": "versions do not match, starting update..."}')
+            send_message('{"Info": "local_version %s does not match with online_version %s , starting update..."}' %local_version, %online_version)
+        else:
+            send_message('{"Info": "versions match, no update needed."}')
+
+    except Exception as e:
+        send_message('{"Error in update function: %s"}' %e)
+        create_crashlog('Error in update function: %s\n%s' %e %traceback.format_exc())
+
+
+    updatercopy_path = copyUpdater()
+    send_message('{"Info": startUpdater() updatercopy_path: %s}' % updatercopy_path)
+
+    os.chdir('/')
+    os.startfile(updatercopy_path)
+    os.chdir('/')
+
+
+    send_message('{"Info": os.system(updatercopy_path) started}')
+    #verschiebt den updater aus diesem ordner in den überordner
+
+
+
+
+    return True
+'''
 
 def copyUpdater():
     send_message('{"Info": copyUpdater() started}' )
@@ -253,6 +357,19 @@ def copyUpdater():
 
     return new_updater_path
 
+def update_youtube_dl():
+    send_message('{"Info": Starting youtube-dl update}')
+    try:
+        process = subprocess.Popen("youtube-dl -U", creationflags=CREATE_NEW_CONSOLE)
+        process.poll()
+        process.wait()
+        if process.returncode == 0:
+            send_message('{"Info": youtube-dl updated successfully}')
+        else:
+            send_message('{"Error": "youtube-dl update failed", "stderr": "%s"}' % stderr.decode('utf-8'))
+    except Exception as e:
+        send_message('{"Error": "Exception during youtube-dl update", "exception": "%s"}' % str(e))
+        wait(1)
 
 def debug(self,func,input):
   try:
@@ -331,6 +448,7 @@ if True:
             try:
                 if startUpdater() == True:
                     self.exit()
+
             except Exception as err:
                 self.log('{"Err: ": %s}' % err)
             return False
