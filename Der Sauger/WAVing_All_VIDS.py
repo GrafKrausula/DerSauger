@@ -226,7 +226,7 @@ def Main():
 
             #erstemal checken ob ordner 'KONVERTIERUNG' an convertpath existiert
 
-    supportedfiletypes = [convertformat,"mkv","mp4","webm","avi","m4a","mp3","aax"]
+    supportedfiletypes = [convertformat,"mkv","mp4","webm","avi","m4a","mp3","aax","opus"]
 
     #print(downloadpath)
     #print(convertpath)
