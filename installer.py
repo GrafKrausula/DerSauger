@@ -105,7 +105,7 @@ class Downloader:
         return True  # Signals success
 
     # Handles missing UPDATE_DerSauger.zip file by attempting three sequential approaches
-     def handle_missing_zip(self, zipfilepath):
+    def handle_missing_zip(self, zipfilepath):
         # Attempts to resolve missing zip file using three sequential approaches
         attempts = [
             lambda: self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath),
