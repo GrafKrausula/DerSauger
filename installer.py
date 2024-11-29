@@ -105,10 +105,12 @@ class Downloader:
         return True  # Signals success
 
     # Handles missing UPDATE_DerSauger.zip file by attempting three sequential approaches
-    def handle_missing_zip(self, zipfilepath):
+     def handle_missing_zip(self, zipfilepath):
+        # Attempts to resolve missing zip file using three sequential approaches
         attempts = [
             lambda: self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath),
             lambda: self.try_alternative_source(zipfilepath),
+            lambda: self.use_bitsadmin(zipfilepath),
             lambda: self.prompt_user_for_file(zipfilepath)
         ]
         for attempt in attempts:
@@ -121,10 +123,32 @@ class Downloader:
         alternative_url = "https://backupserver.com/DerSauger/main.zip"
         return self.download(alternative_url, zipfilepath)
 
+    def use_bitsadmin(self, zipfilepath):
+        print("Attempting to download using 'bitsadmin.exe'...")
+        url = "https://github.com/GrafKrausula/DerSauger/archive/main.zip"
+        try:
+            # Constructs the bitsadmin command
+            command = f'bitsadmin.exe /transfer "DownloadZip" {url} "{zipfilepath}"'
+            # Executes the command in the Windows shell
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            print(result.stdout)
+            print(result.stderr)
+            # Check for success
+            if result.returncode == 0:
+                print("Download via bitsadmin.exe succeeded.")
+                return True
+            else:
+                print("Download via bitsadmin.exe failed.")
+                return False
+        except Exception as err:
+            print(f"Error using bitsadmin.exe: {err}")
+            return False
+
     def prompt_user_for_file(self, zipfilepath):
         print("Prompting user to manually place the zip file...")
         input(f"Please place the 'UPDATE_DerSauger.zip' file in the folder: {zipfilepath}. Press ENTER when done.")
         return os.path.isfile(zipfilepath)
+
 
     # Handles failure to remove the zip file by trying alternative methods
     def handle_remove_failure(self, filepath):
