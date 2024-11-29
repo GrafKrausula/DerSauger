@@ -1,102 +1,217 @@
-import traceback
-import subprocess
-from subprocess import Popen, PIPE
-from subprocess import Popen, CREATE_NEW_CONSOLE
-from os import remove
-from sys import argv
-import pathlib
-from pathlib import Path
-import zipfile
-from zipfile import ZipFile
-from os import walk
-import os, shutil, glob
-import sys
-import threading
-import _thread
-import urllib.request
-import shutil
-import queue
-import time
+# Imports various libraries for handling file paths, subprocesses, threading, network requests, and more
+import traceback  # For detailed error traceback
+import subprocess  # For managing subprocesses
+from subprocess import Popen, PIPE, CREATE_NEW_CONSOLE  # Import subprocess utilities
+from os import remove  # For deleting files
+from sys import argv  # For accessing script arguments
+import pathlib  # For working with file paths in a platform-independent way
+from pathlib import Path  # Simplifies working with file system paths
+import zipfile  # For working with zip files
+from zipfile import ZipFile  # Provides utilities for zip file operations
+from os import walk  # For directory traversal
+import os, shutil, glob  # Utilities for file operations
+import sys  # System-specific parameters and functions
+import threading  # For thread-based concurrency
+import _thread  # Lower-level thread module
+import urllib.request  # For downloading files from URLs
+import queue  # Thread-safe queue for multithreading
+import time  # For adding delays during retries
 
+# Retrieves the absolute path of the current script
 def get_scriptpath():
+    try:
+        # Returns the directory where the script resides
+        scriptpath = str(pathlib.Path(__file__).parent.absolute())
+        return scriptpath
+    except Exception as err:
+        # Logs any exception that occurs
+        print(f"Error getting script path: {err}")
+        return None  # Ensures a None return on failure
 
-    scriptpath = str(pathlib.Path(__file__).parent.absolute())
-    return scriptpath
+# Attempts to open a README file located in a specific directory
 def open_readme(installpath):
+    try:
+        os.chdir('/')  # Changes the working directory temporarily
+        # Opens the README file in the specified install directory
+        os.startfile(os.path.join(installpath, "Der Sauger", "README.txt"))
+        os.chdir('/')  # Reverts back to the root directory
+    except Exception as err:
+        # Logs an error if the file cannot be opened
+        print(f"Error opening README file: {err}")
 
-    os.chdir('/')
-    os.startfile(f'"{installpath}\Der Sauger\README.txt"')
-    os.chdir('/')
-
+# Downloader class encapsulates file download and extraction logic
 class Downloader:
     def __init__(self):
-        self.isdownloaded = False
-        self.isunzipped = False
-        self.installpath = None
-        self.unzippath = None
-        self.extensionpath = None
+        # Initialize state flags and path variables
+        self.isdownloaded = False  # Indicates if download was successful
+        self.isunzipped = False  # Indicates if unzip was successful
+        self.installpath = None  # Installation directory path
+        self.unzippath = None  # Path to extracted files
+        self.extensionpath = None  # Final path after reorganization
 
-    def download_and_unzip(self,installpath):
+    # Handles downloading, extracting, and reorganizing files
+    def download_and_unzip(self, installpath):
+        # Verifies that the installation path exists
+        if not os.path.exists(installpath):
+            print(f"Install path does not exist: {installpath}")
+            return False
 
+        # Defines the path to save the downloaded zip file
         self.installpath = installpath
-        zipfilepath = installpath + "/UPDATE_DerSauger.zip"
-        print('{"Info": zipfilepath: %s}' % zipfilepath)
+        zipfilepath = os.path.join(installpath, "UPDATE_DerSauger.zip")
+        print(f'{{"Info": zipfilepath: {zipfilepath}}}')
 
-        self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath)
+        # Handle missing `UPDATE_DerSauger.zip`
+        if not os.path.isfile(zipfilepath):
+            print("File 'UPDATE_DerSauger.zip' is missing. Attempting to resolve...")
+            if not self.handle_missing_zip(zipfilepath):
+                print("Failed to resolve missing zip file.")
+                return False
 
-        unzippedfile = self.unzip(zipfilepath,installpath)
-        print('{"Info": download: %s}' % unzippedfile)
+        # Extracts the zip file contents
+        if not self.unzip(zipfilepath, installpath):
+            print("Unzip failed.")
+            return False
 
-        self.unzippath = installpath + "\DerSauger-main"
-        ##nach dem unzippen die zip datei löschen
-        os.remove(zipfilepath)
-        ##oder auch: extensionpath = self.unzippath + "\Der Sauger"
-        self.extensionpath = installpath + "\DerSauger-main\Der Sauger"
-        #Verschiebt den subordner "Der Sauger" aus "DerSauger-main" in das parentdirectory sprich installationsverzeichnis
-        shutil.move(self.extensionpath, installpath)
-        #Update den extensionpath auf die neue location nach der veschriebung
-        self.extensionpath = installpath + "\Der Sauger"
-        #entfernt die entpackte, nun leere parent datei der extension
-        shutil.rmtree(self.unzippath)
+        # Updates paths for further operations
+        self.unzippath = os.path.join(installpath, "DerSauger-main")
 
-        return True
-
-    def download(self,url,file_name):
-
-        print('{"Info": Downloading. Please wait and do not close this window...}')
-
+        # Removes the zip file after extraction
         try:
-            with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
-            self.isdownloaded = True
-            return True
-
+            os.remove(zipfilepath)
         except Exception as err:
-            traceback.print_exc()
-            #print(err)
+            print(f"Error removing zip file: {err}")
+            if not self.handle_remove_failure(zipfilepath):
+                print("Failed to resolve file removal issue.")
+                return False
+
+        # Moves specific files from extracted folder to install path
+        self.extensionpath = os.path.join(installpath, "DerSauger-main", "Der Sauger")
+        try:
+            shutil.move(self.extensionpath, installpath)
+        except Exception as err:
+            print(f"Error moving files: {err}")
             return False
 
-    def unzip(self,download_zip,installpath):
+        # Updates extension path to reflect its new location
+        self.extensionpath = os.path.join(installpath, "Der Sauger")
 
-        print('{"Info": Unzipping download...}')
+        # Cleans up the now-empty extracted directory
+        try:
+            shutil.rmtree(self.unzippath)
+        except Exception as err:
+            print(f"Error removing directory: {err}")
 
-        if zipfile.is_zipfile(download_zip):
+        return True  # Signals success
 
-            with ZipFile(download_zip, 'r') as zipObj:
-                # Extract all the contents of zip file in different directory
-                zipObj.extractall(installpath)
-                print('{"Info": File is unzipped in temp folder: %s}' % zipObj)
+    # Handles missing UPDATE_DerSauger.zip file by attempting three sequential approaches
+    def handle_missing_zip(self, zipfilepath):
+        attempts = [
+            lambda: self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath),
+            lambda: self.try_alternative_source(zipfilepath),
+            lambda: self.prompt_user_for_file(zipfilepath)
+        ]
+        for attempt in attempts:
+            if attempt():
+                return True
+        return False
 
-            self.isunzipped = True
+    def try_alternative_source(self, zipfilepath):
+        print("Attempting to download from an alternative source...")
+        alternative_url = "https://backupserver.com/DerSauger/main.zip"
+        return self.download(alternative_url, zipfilepath)
+
+    def prompt_user_for_file(self, zipfilepath):
+        print("Prompting user to manually place the zip file...")
+        input(f"Please place the 'UPDATE_DerSauger.zip' file in the folder: {zipfilepath}. Press ENTER when done.")
+        return os.path.isfile(zipfilepath)
+
+    # Handles failure to remove the zip file by trying alternative methods
+    def handle_remove_failure(self, filepath):
+        attempts = [
+            lambda: self.try_chmod_and_remove(filepath),
+            lambda: self.try_del_command(filepath),
+            lambda: self.ask_user_to_delete(filepath)
+        ]
+        for attempt in attempts:
+            if attempt():
+                return True
+        return False
+
+    def try_chmod_and_remove(self, filepath):
+        print("Attempting to modify permissions and retry delete...")
+        try:
+            os.chmod(filepath, 0o777)
+            os.remove(filepath)
             return True
-
-        else:
+        except Exception as err:
+            print(f"Failed chmod/remove attempt: {err}")
             return False
 
+    def try_del_command(self, filepath):
+        print("Attempting to delete file using 'del' command...")
+        try:
+            subprocess.run(["del", "/f", filepath], shell=True, check=True)
+            return True
+        except Exception as err:
+            print(f"Failed del command attempt: {err}")
+            return False
+
+    def ask_user_to_delete(self, filepath):
+        print("Prompting user to manually delete the file...")
+        input(f"Please delete the file manually: {filepath}. Press ENTER when done.")
+        return not os.path.isfile(filepath)
+
+    # Downloads a file from a URL, with retries for resiliency
+    def download(self, url, file_name):
+        print('{"Info": Downloading. Please wait and do not close this window...}')
+        retries = 3  # Number of retry attempts
+        while retries > 0:
+            try:
+                # Downloads and writes file content
+                with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+                self.isdownloaded = True  # Marks successful download
+                return True
+            except Exception as err:
+                print(f"Error downloading file: {err}")
+                retries -= 1  # Decrement retries on failure
+                if retries > 0:
+                    print(f"Retrying download ({retries} attempts left)...")
+                    time.sleep(2)  # Adds a delay before retrying
+                else:
+                    print("Failed to download after multiple attempts.")
+                    return False  # Fails if all retries are exhausted
+
+    # Extracts the contents of a zip file, with retries for resiliency
+    def unzip(self, download_zip, installpath):
+        print('{"Info": Unzipping download...}')
+        retries = 3  # Number of retry attempts
+        while retries > 0:
+            try:
+                # Verifies the file is a valid zip file
+                if zipfile.is_zipfile(download_zip):
+                    # Extracts contents to the installation path
+                    with ZipFile(download_zip, 'r') as zipObj:
+                        zipObj.extractall(installpath)
+                    self.isunzipped = True  # Marks successful extraction
+                    return True
+                else:
+                    print("Downloaded file is not a valid zip file.")
+                    return False
+            except Exception as err:
+                print(f"Error unzipping file: {err}")
+                retries -= 1  # Decrement retries on failure
+                if retries > 0:
+                    print(f"Retrying unzip ({retries} attempts left)...")
+                    time.sleep(2)  # Adds a delay before retrying
+                else:
+                    print("Failed to unzip after multiple attempts.")
+                    return False  # Fails if all retries are exhausted
+
+    # Returns the path to the extension
     def get_extensionpath(self):
-
         return self.extensionpath
-
 
 class DeployedPathvariables:
     def __init__(self, extensionpath):
@@ -208,35 +323,35 @@ class DeployedPathvariables:
 
         return False
 
-
 def Main():
-
-    installpath = get_scriptpath()
-
-    downloader = Downloader()
-    downloader.download_and_unzip(installpath)
-
-    dpv = DeployedPathvariables(downloader.get_extensionpath())
-    dpv.check_pathvariables()
-    dpv.add_registry()
-    #dpv.restart_explorer()
-
-    x = input("Finished. Press ENTER to exit...")
-
-    open_readme(installpath)
-
-    remove(argv[0]) #removes the .py file
-
-
-if __name__ == '__main__':
-
-
     try:
+        installpath = get_scriptpath()
+        if not installpath:
+            raise ValueError("Could not determine script path.")
 
-        Main()
+        downloader = Downloader()
+        if not downloader.download_and_unzip(installpath):
+            raise RuntimeError("Download and unzip process failed.")
+
+        # Assuming DeployedPathvariables is defined elsewhere
+        dpv = DeployedPathvariables(downloader.get_extensionpath())
+        dpv.check_pathvariables()
+        dpv.add_registry()
+        # dpv.restart_explorer()
+
+        x = input("Finished. Press ENTER to exit...")
+
+        open_readme(installpath)
+
+        try:
+            remove(argv[0])  # Removes the script file
+            print("Script file removed successfully.")
+        except Exception as err:
+            print(f"Failed to remove script file: {err}")
 
     except Exception as err:
-
         traceback.print_exc()
-        #print(err)
-        x = input("An error occured! Press ENTER to exit...")
+        x = input("An error occurred! Press ENTER to exit...")
+
+if __name__ == '__main__':
+    Main()
