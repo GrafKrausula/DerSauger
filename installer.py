@@ -28,6 +28,39 @@ def get_scriptpath():
         print(f"Error getting script path: {err}")
         return None  # Ensures a None return on failure
 
+
+# Checks if the script is running with administrative privileges
+def is_admin():
+    try:
+        return os.getuid() == 0  # Unix systems
+    except AttributeError:
+        # For Windows, attempt to create a privileged file as a test
+        try:
+            test_file = os.path.join(os.environ.get("SYSTEMROOT", "C:\\Windows"), "temp", "test_admin.tmp")
+            with open(test_file, "w") as f:
+                f.write("test")
+            os.remove(test_file)
+            return True
+        except Exception:
+            return False
+
+
+# Relaunches the script with admin privileges
+def relaunch_as_admin():
+    try:
+        if is_admin():
+            print("Already running with admin privileges.")
+            return True
+
+        script = sys.executable
+        params = " ".join([f'"{arg}"' for arg in sys.argv])
+        cmd = f'{script} {params}'
+        subprocess.run(["runas", "/user:Administrator", cmd], shell=True)
+        return True
+    except Exception as err:
+        print(f"Failed to relaunch as admin: {err}")
+        return False
+
 # Attempts to open a README file located in a specific directory
 def open_readme(installpath):
     try:
@@ -104,13 +137,14 @@ class Downloader:
 
         return True  # Signals success
 
-    # Handles missing UPDATE_DerSauger.zip file by attempting three sequential approaches
+    # Handles missing UPDATE_DerSauger.zip file by attempting various approaches
     def handle_missing_zip(self, zipfilepath):
-        # Attempts to resolve missing zip file using three sequential approaches
         attempts = [
             lambda: self.download("https://github.com/GrafKrausula/DerSauger/archive/main.zip", zipfilepath),
             lambda: self.try_alternative_source(zipfilepath),
-            lambda: self.use_bitsadmin(zipfilepath),
+            lambda: self.use_curl(zipfilepath),
+            lambda: self.use_powershell(zipfilepath),
+            lambda: self.try_admin_privilege(zipfilepath),  # Added admin relaunch
             lambda: self.prompt_user_for_file(zipfilepath)
         ]
         for attempt in attempts:
@@ -120,33 +154,58 @@ class Downloader:
 
     def try_alternative_source(self, zipfilepath):
         print("Attempting to download from an alternative source...")
-        alternative_url = "https://backupserver.com/DerSauger/main.zip"
+        alternative_url = "-https://backupserver.com/DerSauger/main.zip"
         return self.download(alternative_url, zipfilepath)
 
-    def use_bitsadmin(self, zipfilepath):
-        print("Attempting to download using 'bitsadmin.exe'...")
+    def try_admin_privilege(self, zipfilepath):
+        print("Attempting to relaunch with admin privileges...")
+        if relaunch_as_admin():
+            print("Relaunched successfully. Retrying download...")
+            return os.path.isfile(zipfilepath)
+        print("Admin privilege relaunch failed.")
+        return False
+
+
+    def use_curl(self, zipfilepath):
+        print("Attempting to download using curl...")
         url = "https://github.com/GrafKrausula/DerSauger/archive/main.zip"
         try:
-            # Constructs the bitsadmin command
-            command = f'bitsadmin.exe /transfer "DownloadZip" {url} "{zipfilepath}"'
-            # Executes the command in the Windows shell
+            command = f'curl -L {url} -o "{zipfilepath}"'
             result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             print(result.stdout)
             print(result.stderr)
-            # Check for success
             if result.returncode == 0:
-                print("Download via bitsadmin.exe succeeded.")
+                print("Download via curl succeeded.")
                 return True
             else:
-                print("Download via bitsadmin.exe failed.")
+                print("Download via curl failed.")
                 return False
         except Exception as err:
-            print(f"Error using bitsadmin.exe: {err}")
+            print(f"Error using curl: {err}")
             return False
+
+    def use_powershell(self, zipfilepath):
+        print("Attempting to download using PowerShell...")
+        url = "https://github.com/GrafKrausula/DerSauger/archive/main.zip"
+        try:
+            command = f'powershell -Command "Invoke-WebRequest -Uri {url} -OutFile {zipfilepath}"'
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            print(result.stdout)
+            print(result.stderr)
+            if result.returncode == 0:
+                print("Download via PowerShell succeeded.")
+                return True
+            else:
+                print("Download via PowerShell failed.")
+                return False
+        except Exception as err:
+            print(f"Error using PowerShell: {err}")
+            return False
+
 
     def prompt_user_for_file(self, zipfilepath):
         print("Prompting user to manually place the zip file...")
-        input(f"Please place the 'UPDATE_DerSauger.zip' file in the folder: {zipfilepath}. Press ENTER when done.")
+        input(f"Download https://github.com/GrafKrausula/DerSauger/archive/main.zip, rename it to 'UPDATE_DerSauger.zip' and place the 'UPDATE_DerSauger.zip' like that: {zipfilepath}. Press ENTER when done.")
         return os.path.isfile(zipfilepath)
 
 
