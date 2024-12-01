@@ -1,6 +1,7 @@
 ; Top level definitions
 !define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo"
 
+Name "DerSauger"
 OutFile "DerSaugerInstaller.exe"
 InstallDir "$PROGRAMFILES\DerSauger"
 RequestExecutionLevel admin
@@ -280,18 +281,14 @@ FunctionEnd
 Function InstallFFmpeg
     ClearErrors
 
-    FFmpegWingetFound:
-        ExecWait '$WingetExePath install --id Gyan.FFmpeg --silent' $0
-        IntCmp $0 0 FFmpegInstallSuccess FFmpegInstallError FFmpegInstallError
-        FFmpegInstallError:
-            MessageBox MB_OK "Fehler bei der Installation von FFmpeg ueber winget."
-            Return
-        FFmpegInstallSuccess:
-            Return
-
-    FFmpegWingetNotFound:
-        MessageBox MB_OK "Winget ist nicht installiert. Bitte installieren Sie FFmpeg manuell von https://www.gyan.dev/ffmpeg/builds/ und fuegen Sie es dem PATH hinzu."
+    ExecWait '$WingetExePath install --id Gyan.FFmpeg --silent' $0
+    IntCmp $0 0 FFmpegInstallSuccess FFmpegInstallError FFmpegInstallError
+    FFmpegInstallError:
+        MessageBox MB_OK "Fehler bei der Installation von FFmpeg ueber winget."
         Return
+    FFmpegInstallSuccess:
+        Return
+
 FunctionEnd
 
 Function InstallOptionsPage
