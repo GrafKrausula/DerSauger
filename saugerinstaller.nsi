@@ -117,12 +117,12 @@ Section "Installieren"
     ReadRegStr $R2 HKCU "${REG_KEY}" ""
     StrCmp $R2 "" RegKeyNotFound
 
-    MessageBox MB_YESNO "Der Registrierungseintrag für den Native Messaging Host existiert bereits. Überschreiben?" IDYES RegOverwrite IDNO RegSkip
+    MessageBox MB_YESNO "Der Registrierungseintrag fuer den Native Messaging Host existiert bereits. Ueberschreiben?" IDYES RegOverwrite IDNO RegSkip
     RegOverwrite:
         WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.example.echo-win.json"
         Goto RegKeyDone
     RegSkip:
-        MessageBox MB_OK "Der bestehende Registrierungseintrag wurde nicht geändert."
+        MessageBox MB_OK "Der bestehende Registrierungseintrag wurde nicht geaendert."
         Goto RegKeyDone
 
     RegKeyNotFound:
@@ -132,7 +132,7 @@ Section "Installieren"
     
     ExecShell "open" "notepad.exe" '"$INSTDIR\README.txt"'
     ${If} ${Errors}
-        MessageBox MB_OK "Hinweis: README.txt konnte nicht automatisch geöffnet werden. Sie finden die Datei in: $INSTDIR\README.txt"
+        MessageBox MB_OK "Hinweis: README.txt konnte nicht automatisch geoeffnet werden. Sie finden die Datei in: $INSTDIR\README.txt"
     ${EndIf}
 
 SectionEnd
@@ -150,7 +150,7 @@ Function CheckPython39
     ${EndIf}
 
     ${If} $Python39Path == ""
-        MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+        MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert (Notwendig!). Moechten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
         InstallNow:
             ExecWait '$WingetExePath install --id Python.Python.3.9 -e --silent' $0
             IntCmp $0 0 +1 PythonInstallError PythonInstallError
@@ -217,7 +217,7 @@ Function CheckNeededPythonVersionForPackages
     ${EndIf}
 
     ${If} $PythonPackageNeededPath == ""
-        MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersion ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+        MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersion ist nicht installiert (Notwendig!). Moechten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
         InstallNow:
             ExecWait '$WingetExePath install --id Python.Python.$PythonPackageNeededVersion -e --silent' $0
             IntCmp $0 0 +1 PythonInstallError PythonInstallError
@@ -262,7 +262,7 @@ Function InstallNeededPythonVersionForPackagesVenv
     ExecWait '"$PythonPackageNeededPath\python.exe" -m venv "$INSTDIR\packages_venv"' $0
     IntCmp $0 0 PythonPackageInstallSuccess PythonPackageInstallError PythonPackageInstallError
     PythonPackageInstallError:
-        MessageBox MB_OK "Fehler beim Installieren der Python Version für Pakete."
+        MessageBox MB_OK "Fehler beim Installieren der Python Version fuer Pakete."
         Abort
     PythonPackageInstallSuccess:
 FunctionEnd
@@ -284,13 +284,13 @@ Function InstallFFmpeg
         ExecWait '$WingetExePath install --id Gyan.FFmpeg --silent' $0
         IntCmp $0 0 FFmpegInstallSuccess FFmpegInstallError FFmpegInstallError
         FFmpegInstallError:
-            MessageBox MB_OK "Fehler bei der Installation von FFmpeg über winget."
+            MessageBox MB_OK "Fehler bei der Installation von FFmpeg ueber winget."
             Return
         FFmpegInstallSuccess:
             Return
 
     FFmpegWingetNotFound:
-        MessageBox MB_OK "Winget ist nicht installiert. Bitte installieren Sie FFmpeg manuell von https://www.gyan.dev/ffmpeg/builds/ und fügen Sie es dem PATH hinzu."
+        MessageBox MB_OK "Winget ist nicht installiert. Bitte installieren Sie FFmpeg manuell von https://www.gyan.dev/ffmpeg/builds/ und fuegen Sie es dem PATH hinzu."
         Return
 FunctionEnd
 
@@ -323,7 +323,7 @@ Section "Uninstall"
     RmDir "$INSTDIR"
 
     DeleteRegKey HKCU "${REG_KEY}"
-    MessageBox MB_OK "Die Registrierungseinträge wurden entfernt."
+    MessageBox MB_OK "Die Registrierungseintraege wurden entfernt."
 
     MessageBox MB_OK "Die Chrome-Erweiterung wurde deinstalliert."
 SectionEnd
