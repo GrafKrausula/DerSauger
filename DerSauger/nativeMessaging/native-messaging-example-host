@@ -20,6 +20,10 @@ from os import walk
 import os, shutil, glob
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
+
+PYTHONBINARYPATH_relative = "..\python39_venv\Scripts\python.exe"
+##PYTHONBINARYPATH_absolute = 
+
 # On Windows, the default I/O mode is O_TEXT. Set this to O_BINARY
 # to avoid unwanted modifications of the input/output streams.
 if sys.platform == "win32":
@@ -90,7 +94,7 @@ def wavingTheVids(format,downloadpath,convertpath):
 
     send_message('{"Info": Waving All Vids %s}' % len(cmd_threads))
     openScriptCmd = f'cmd /c "cd /d "{convertscriptpath}"'
-    openScriptCmd +=f' && python WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
+    openScriptCmd +=f' && "{PYTHONBINARYPATH}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
     openScriptCmd += ' " '
     send_message('{"openScriptCmd": %s}' % openScriptCmd)
     process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
