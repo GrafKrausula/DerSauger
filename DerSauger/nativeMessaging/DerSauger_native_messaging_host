@@ -21,20 +21,29 @@ import os, shutil, glob
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
 
-# Get script directory
-# If script is in: C:\MyApp\nativeMessaging\host\native-messaging-example-host.py
+
+# Get the absolute path of the current script's directory
+# Example: If script is at C:\MyApp\nativeMessaging\native-messaging-example-host.py
+# Then script_dir will be C:\MyApp
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Construct absolute paths
-PYTHON39BINARYPATH_relative = "..\python39_venv\Scripts\python.exe"
-# Then script_dir = C:\MyApp\nativeMessaging\host
-PYTHON39BINARYPATH_absolute = os.path.normpath(os.path.join(script_dir, PYTHON39BINARYPATH_relative))
+# Configure paths to Python interpreters in virtual environments
+# Relative paths go up one level (..) from host directory
+PYTHON39_VENV_PATH_RELATIVE = "..\\python39_venv\\Scripts\\python.exe"
+PYTHON39_VENV_PATH_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PYTHON39_VENV_PATH_RELATIVE))
+# Example resolved absolute path: C:\MyApp\python39_venv\Scripts\python.exe
 
-PYTHONNEWBINARYPATH_relative = "..\packages_venv\Scripts\python.exe"
-# Then script_dir = C:\MyApp\nativeMessaging\host
-PYTHONNEWBINARYPATH_absolute = os.path.normpath(os.path.join(script_dir, PYTHONNEWBINARYPATH_relative))
+PACKAGES_VENV_PATH_RELATIVE = "..\\packages_venv\\Scripts\\python.exe"
+PACKAGES_VENV_PATH_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PACKAGES_VENV_PATH_RELATIVE))
+# Example resolved absolute path: C:\MyApp\packages_venv\Scripts\python.exe
 
-# Example output: C:\MyApp\python39_venv\Scripts\python.exe
+# Verify paths exist
+if not os.path.exists(PYTHON39_VENV_PATH_ABSOLUTE):
+    raise FileNotFoundError(f"Python 3.9 interpreter not found at: {PYTHON39_VENV_PATH_ABSOLUTE}")
+
+if not os.path.exists(PACKAGES_VENV_PATH_ABSOLUTE):
+    raise FileNotFoundError(f"Packages venv interpreter not found at: {PACKAGES_VENV_PATH_ABSOLUTE}")
+
 
 
 # On Windows, the default I/O mode is O_TEXT. Set this to O_BINARY
@@ -69,7 +78,7 @@ def is_main_thread():
 
 def create_crashlog(message):
 
-    path = getScriptPath() + "\CRASH_LOG.txt"
+    path = os.path.expanduser("~\\Documents\\DerSauger_LOG.txt")
     send_message('{"Info": Crashlog Path: %s}' % path)
     log_file = open(path, "a")
     log_file.write(message)
@@ -79,7 +88,7 @@ def create_crashlog(message):
 
 def write_log(message):
 
-    path = getScriptPath() + "\LOG.txt"
+    path = os.path.expanduser("~\\Documents\\DerSauger_LOG.txt")
     #send_message('{"Info": Log Path: %s}' % path)
     log_file = open(path, "a")
     log_file.write(message)
@@ -107,7 +116,7 @@ def wavingTheVids(format,downloadpath,convertpath):
 
     send_message('{"Info": Waving All Vids %s}' % len(cmd_threads))
     openScriptCmd = f'cmd /c "cd /d "{convertscriptpath}"'
-    openScriptCmd +=f' && "{PYTHONBINARYPATH}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
+    openScriptCmd +=f' && "{PYTHON39_VENV_PATH_ABSOLUTE}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
     openScriptCmd += ' " '
     send_message('{"openScriptCmd": %s}' % openScriptCmd)
     process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
@@ -116,7 +125,7 @@ def wavingTheVids(format,downloadpath,convertpath):
 def createdownloadcmd(url,downloadpath):
 
     downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
-    downloadcmd+= f" && PYTHONNEWBINARYPATH_absolute -m yt-dlp -f bestvideo+bestaudio/best {url}"
+    downloadcmd+= f" && {PACKAGES_VENV_PATH_ABSOLUTE} -m yt-dlp -f bestvideo+bestaudio/best {url}"
     downloadcmd+= ' " '
     send_message('{"cmd": %s}' % downloadcmd)
     return downloadcmd
