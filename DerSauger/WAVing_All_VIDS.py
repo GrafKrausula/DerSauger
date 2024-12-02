@@ -114,22 +114,26 @@ def makedirlist(convertpath,supportedfiletypes):
     #print(filetypedirlist)
     return filetypedirlist
 
-def convertfiles(convertpath,supportedfiletypes):
-    proc1 = subprocess.Popen(createconvertcmd(convertpath,supportedfiletypes),stderr=subprocess.STDOUT,stdout=subprocess.PIPE)
-
-    while True:
-        cmdState = proc1.poll()
-        #print(cmdState)
-        if cmdState != None:
-            print("CONVERSION FINISHED!")
-            break;
-        line = proc1.stdout.readline()
-        print(f"{line}")
-        #comparision = str(line) == "b\'\\r\\n\'"
-        #if comparision:
-        #    print("CONVERSION FINISHED!")
-        #    break;
-
+def convertfiles(convertpath, supportedfiletypes):
+    filelists = getfilelists(convertpath, supportedfiletypes)
+    print("Supported Formats:", supportedfiletypes)
+    print(filelists)
+    for filelist in filelists:
+        indexint = filelists.index(filelist)
+        filetype = supportedfiletypes[indexint]
+        for file in filelist:
+            input_file = os.path.join(convertpath, file)
+            output_file = os.path.join(convertpath, file.replace(f'.{filetype}', f'.{supportedfiletypes[0]}'))
+            cmd = ["ffmpeg", "-i", input_file, output_file]
+            proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+            while True:
+                cmdState = proc.poll()
+                if cmdState is not None:
+                    break
+                line = proc.stdout.readline()
+                print(line)
+    print("CONVERSION FINISHED!")
+    
 def removeduplicatindestionation(destination,file):
 
     destinationfile = f"{destination}\{file}"

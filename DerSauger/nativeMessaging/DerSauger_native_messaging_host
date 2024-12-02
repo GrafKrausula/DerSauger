@@ -106,7 +106,7 @@ def getScriptPath():
 def getConvertScriptPath():
 
     scriptpath = str(pathlib.Path(__file__).parent.absolute())
-    convertscriptpath = scriptpath.replace(r"\nativeMessaging\host\host","")
+    convertscriptpath = scriptpath.replace(r"\nativeMessaging","")
     return convertscriptpath
 
 def wavingTheVids(format,downloadpath,convertpath):
@@ -124,11 +124,13 @@ def wavingTheVids(format,downloadpath,convertpath):
 
 def createdownloadcmd(url,downloadpath):
 
+    send_message('{"Info": createdownloadcmd started: %s}' %url)
     downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
-    downloadcmd+= f" && {PACKAGES_VENV_PATH_ABSOLUTE} -m yt-dlp -f bestvideo+bestaudio/best {url}"
+    downloadcmd+= f' && "{PACKAGES_VENV_PATH_ABSOLUTE}" -m yt_dlp -f bestvideo+bestaudio/best {url}'
     downloadcmd+= ' " '
     send_message('{"cmd": %s}' % downloadcmd)
     return downloadcmd
+
 
 def byte_to_megabyte(byte_size): #calcs an byte int to megabyte it, just for reading comprehension
     return byte_size / 1024**2

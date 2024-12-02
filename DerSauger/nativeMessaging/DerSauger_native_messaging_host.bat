@@ -12,7 +12,7 @@
 :: %~dp0..\python39_venv\Scripts\python.exe = C:\MyApp\python39_venv\Scripts\python.exe
 
 set PYTHON_PATH=%~dp0..\python39_venv\Scripts\python.exe
-echo Resolved Python path: %PYTHON_PATH%
+:: echo Resolved Python path: %PYTHON_PATH%
 
 "%PYTHON_PATH%" "%~dp0/DerSauger_native_messaging_host" %*
 
