@@ -107,6 +107,7 @@ def getConvertScriptPath():
 
     scriptpath = str(pathlib.Path(__file__).parent.absolute())
     convertscriptpath = scriptpath.replace(r"\nativeMessaging","")
+    convertscriptpath+="\\scripts"
     return convertscriptpath
 
 def wavingTheVids(format,downloadpath,convertpath):

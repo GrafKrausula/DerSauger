@@ -20,7 +20,8 @@ Var FFmpegState
 Var YtDlpCheckbox
 Var YtDlpState
 Var Python39Path
-Var PythonPackageNeededVersion
+Var PythonPackageNeededVersionDot
+Var PythonPackageNeededVersionNoDot
 Var PythonPackageNeededPath
 
 ; UI Pages
@@ -139,59 +140,54 @@ Section "Installieren"
 SectionEnd
 
 Function CheckPython39
-    ; First try direct path
-    StrCpy $Python39Path "C:\Users\$Username\AppData\Local\Programs\Python\Python39"
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" PathFound39
-    
-    ; If direct path fails, try registry
-    StrCpy $0 "SOFTWARE\Python\PythonCore\3.9\InstallPath"
-    ReadRegStr $Python39Path HKLM "$0" ""
-    ${If} $Python39Path == ""
-        ReadRegStr $Python39Path HKCU "$0" ""
-    ${EndIf}
+    ; Initialize the Python path variable
+    StrCpy $Python39Path ""
 
-    ${If} $Python39Path == ""
-        MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert (Notwendig!). Moechten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
-        InstallNow:
-            ExecWait '$WingetExePath install --id Python.Python.3.9 -e --silent' $0
-            IntCmp $0 0 +1 PythonInstallError PythonInstallError
-            
-            ; Add delay to allow registry updates
-            Sleep 200
-            
-            ; Check direct path first after install
-            IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" PathFound39
-            
-            ; Try registry locations if direct path fails
-            ReadRegStr $Python39Path HKLM "SOFTWARE\Python\PythonCore\3.9\InstallPath" ""
-            ${If} $Python39Path == ""
-                ReadRegStr $Python39Path HKCU "SOFTWARE\Python\PythonCore\3.9\InstallPath" ""
-            ${EndIf}
-            
-            ${If} $Python39Path == ""
-                MessageBox MB_OK "Python 3.9 wurde installiert, aber konnte nicht gefunden werden. Bitte starten Sie den Installer neu."
-                Abort
-            ${EndIf}
-
-            ; Remove trailing newline and backslash if present
-            StrCpy $Python39Path $Python39Path -2
-            MessageBox MB_OK "Python 3.9 wurde installiert unter: $Python39Path"
-            Goto EndFunction
-
-            PythonInstallError:
-                MessageBox MB_OK "Fehler bei der Installation von Python 3.9."
-                Abort
-
-        CancelInstall:
-            Abort
-
-    ${EndIf}
-    
-    PathFound39:
+    ; Try user-specific installation path
+    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" 0 +2
         StrCpy $Python39Path "C:\Users\$Username\AppData\Local\Programs\Python\Python39"
+        Goto PathFound39
+
+    ; Try system-wide installation path
+    IfFileExists "C:\Program Files\Python39\python.exe" 0 +2
+        StrCpy $Python39Path "C:\Program Files\Python39"
+        Goto PathFound39
+
+    ; Try registry (64-bit)
+    ReadRegStr $Python39Path HKLM "SOFTWARE\Python\PythonCore\3.9\InstallPath" ""
+    IfFileExists "$Python39Path\python.exe" 0 +2
+        Goto PathFound39
+
+    ; Try registry (32-bit on 64-bit Windows)
+    ReadRegStr $Python39Path HKLM "SOFTWARE\WOW6432Node\Python\PythonCore\3.9\InstallPath" ""
+    IfFileExists "$Python39Path\python.exe" 0 +2
+        Goto PathFound39
+
+    ; Python not found, prompt for installation
+    MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+
+    InstallNow:
+        ; Install Python 3.9 using winget
+        ExecWait '"$WingetExePath" install --id Python.Python.3.9 -e --silent' $0
+        IntCmp $0 0 +2 PythonInstallError
+
+        ; Wait for installation to complete
+        Sleep 3000
+
+        ; Re-run the check after installation
+        Call CheckPython39
+        Return
+
+    PythonInstallError:
+        MessageBox MB_OK "Fehler bei der Installation von Python 3.9."
+        Abort
+
+    CancelInstall:
+        Abort
+
+    PathFound39:
         MessageBox MB_OK "Python 3.9 gefunden unter: $Python39Path"
-    EndFunction:
-FunctionEnd
+    FunctionEnd
 
 Function InstallPython39Venv
     ; Create venv using Python 3.9
@@ -203,60 +199,59 @@ Function InstallPython39Venv
     VenvSuccess:
 FunctionEnd
 
+
 Function CheckNeededPythonVersionForPackages
-    StrCpy $PythonPackageNeededVersion "3.13"
-    
-    ; Try direct path first
-    StrCpy $PythonPackageNeededPath "C:\Users\$Username\AppData\Local\Programs\Python\Python313"
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python313\python.exe" PathFound
-    
-    ; If direct path fails, try registry
-    StrCpy $0 "SOFTWARE\Python\PythonCore\$PythonPackageNeededVersion\InstallPath"
-    ReadRegStr $PythonPackageNeededPath HKLM "$0" ""
-    ${If} $PythonPackageNeededPath == ""
-        ReadRegStr $PythonPackageNeededPath HKCU "$0" ""
-    ${EndIf}
+    ; Set the required Python version
+    StrCpy $PythonPackageNeededVersionDot "3.13"
+    StrCpy $PythonPackageNeededVersionNoDot "313"
+    ; Initialize the Python path variable
+    StrCpy $PythonPackageNeededPath ""
 
-    ${If} $PythonPackageNeededPath == ""
-        MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersion ist nicht installiert (Notwendig!). Moechten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
-        InstallNow:
-            ExecWait '$WingetExePath install --id Python.Python.$PythonPackageNeededVersion -e --silent' $0
-            IntCmp $0 0 +1 PythonInstallError PythonInstallError
-            
-            Sleep 200
-            
-            ; Check direct path first after install
-            IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python313\python.exe" PathFound
-            
-            ; Try registry if direct path fails
-            ReadRegStr $PythonPackageNeededPath HKLM "$0" ""
-            ${If} $PythonPackageNeededPath == ""
-                ReadRegStr $PythonPackageNeededPath HKCU "$0" ""
-            ${EndIf}
-            
-            ${If} $PythonPackageNeededPath == ""
-                MessageBox MB_OK "Python $PythonPackageNeededVersion wurde installiert, aber konnte nicht gefunden werden. Bitte starten Sie den Installer neu."
-                Abort
-            ${EndIf}
+    ; Try user-specific installation path
+    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +2
+        StrCpy $PythonPackageNeededPath "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot"
+        Goto PathFound
 
-            StrCpy $PythonPackageNeededPath $PythonPackageNeededPath -2
-            MessageBox MB_OK "Python $PythonPackageNeededVersion wurde installiert unter: $PythonPackageNeededPath"
-            Goto EndFunction
+    ; Try system-wide installation path
+    IfFileExists "C:\Program Files\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +2
+        StrCpy $PythonPackageNeededPath "C:\Program Files\Python$PythonPackageNeededVersionNoDot"
+        Goto PathFound
 
-            PythonInstallError:
-                MessageBox MB_OK "Fehler bei der Installation von Python $PythonPackageNeededVersion."
-                Abort
+    ; Try registry (64-bit)
+    ReadRegStr $PythonPackageNeededPath HKLM "SOFTWARE\Python\PythonCore\$PythonPackageNeededVersionDot\InstallPath" ""
+    IfFileExists "$PythonPackageNeededPath\python.exe" 0 +2
+        Goto PathFound
 
-        CancelInstall:
-            Abort
-    ${EndIf}
-    
+    ; Try registry (32-bit on 64-bit Windows)
+    ReadRegStr $PythonPackageNeededPath HKLM "SOFTWARE\WOW6432Node\Python\PythonCore\$PythonPackageNeededVersionDot\InstallPath" ""
+    IfFileExists "$PythonPackageNeededPath\python.exe" 0 +2
+        Goto PathFound
+
+    ; Python not found, prompt for installation
+    MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersionDot ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+
+    InstallNow:
+        ; Install Python using winget
+        ExecWait '"$WingetExePath" install --id Python.Python.$PythonPackageNeededVersionDot -e --silent' $0
+        IntCmp $0 0 +2 PythonInstallError
+
+        ; Wait for installation to complete
+        Sleep 5000
+
+        ; Re-run the check after installation
+        Call CheckNeededPythonVersionForPackages
+        Return
+
+    PythonInstallError:
+        MessageBox MB_OK "Fehler bei der Installation von Python $PythonPackageNeededVersionDot."
+        Abort
+
+    CancelInstall:
+        Abort
+
     PathFound:
-        StrCpy $PythonPackageNeededPath "C:\Users\$Username\AppData\Local\Programs\Python\Python313"
-        MessageBox MB_OK "Python $PythonPackageNeededVersion gefunden unter: $PythonPackageNeededPath"
-    EndFunction:
-FunctionEnd
-
+        MessageBox MB_OK "Python $PythonPackageNeededVersionDot gefunden unter: $PythonPackageNeededPath"
+    FunctionEnd
 
 Function InstallNeededPythonVersionForPackagesVenv
     ; Create venv using needed Python version for packages
