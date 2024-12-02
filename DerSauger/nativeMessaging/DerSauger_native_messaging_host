@@ -21,8 +21,21 @@ import os, shutil, glob
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
 
-PYTHONBINARYPATH_relative = "..\python39_venv\Scripts\python.exe"
-##PYTHONBINARYPATH_absolute = 
+# Get script directory
+# If script is in: C:\MyApp\nativeMessaging\host\native-messaging-example-host.py
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct absolute paths
+PYTHON39BINARYPATH_relative = "..\python39_venv\Scripts\python.exe"
+# Then script_dir = C:\MyApp\nativeMessaging\host
+PYTHON39BINARYPATH_absolute = os.path.normpath(os.path.join(script_dir, PYTHON39BINARYPATH_relative))
+
+PYTHONNEWBINARYPATH_relative = "..\packages_venv\Scripts\python.exe"
+# Then script_dir = C:\MyApp\nativeMessaging\host
+PYTHONNEWBINARYPATH_absolute = os.path.normpath(os.path.join(script_dir, PYTHONNEWBINARYPATH_relative))
+
+# Example output: C:\MyApp\python39_venv\Scripts\python.exe
+
 
 # On Windows, the default I/O mode is O_TEXT. Set this to O_BINARY
 # to avoid unwanted modifications of the input/output streams.
@@ -103,7 +116,7 @@ def wavingTheVids(format,downloadpath,convertpath):
 def createdownloadcmd(url,downloadpath):
 
     downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
-    downloadcmd+= f" && youtube-dl -f bestvideo+bestaudio/best {url}"
+    downloadcmd+= f" && PYTHONNEWBINARYPATH_absolute -m yt-dlp -f bestvideo+bestaudio/best {url}"
     downloadcmd+= ' " '
     send_message('{"cmd": %s}' % downloadcmd)
     return downloadcmd
@@ -364,7 +377,7 @@ def copyUpdater():
 def update_youtube_dl():
     send_message('{"Info": Starting youtube-dl update}')
     try:
-        process = subprocess.Popen("youtube-dl -U", creationflags=CREATE_NEW_CONSOLE)
+        process = subprocess.Popen("PYTHONNEWBINARYPATH_absolute -m yt-dlp -U", creationflags=CREATE_NEW_CONSOLE)
         process.poll()
         process.wait()
         if process.returncode == 0:

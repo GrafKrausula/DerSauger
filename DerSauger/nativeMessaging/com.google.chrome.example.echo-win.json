@@ -4,8 +4,8 @@
 
 {
   "name": "com.google.chrome.example.echo",
-  "description": "Der Sauger python Host",
-  "path": "native-messaging-example-host.bat",
+  "description": "Der Sauger native messaging python Host",
+  "path": "DerSauger_native_messaging_host.bat",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/"
