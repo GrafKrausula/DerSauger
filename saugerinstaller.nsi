@@ -144,17 +144,17 @@ Function CheckPython39
     StrCpy $Python39Path ""
 
     ; Try user-specific installation path
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" 0 +2
+    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" 0 +3
         StrCpy $Python39Path "C:\Users\$Username\AppData\Local\Programs\Python\Python39"
         Goto PathFound39
 
     ; Try system-wide installation path
-    IfFileExists "C:\Program Files\Python39\python.exe" 0 +2
+    IfFileExists "C:\Program Files\Python39\python.exe" 0 +3
         StrCpy $Python39Path "C:\Program Files\Python39"
         Goto PathFound39
 
     ; Try registry (64-bit)
-    ReadRegStr $Python39Path HKLM "SOFTWARE\Python\PythonCore\3.9\InstallPath" ""
+    ReadRegStr $Python39Path HKCU "SOFTWARE\Python\PythonCore\3.9\PythonPath" ""
     IfFileExists "$Python39Path\python.exe" 0 +2
         Goto PathFound39
 
@@ -162,6 +162,12 @@ Function CheckPython39
     ReadRegStr $Python39Path HKLM "SOFTWARE\WOW6432Node\Python\PythonCore\3.9\InstallPath" ""
     IfFileExists "$Python39Path\python.exe" 0 +2
         Goto PathFound39
+
+    ; DOES NOT WORK, py.exe is not being handled if founf
+    ; Try registry (32-bit on 64-bit Windows)
+    ;ReadRegStr $Python39Path HKLM "SOFTWARE\WOW6432Node\Python\PyLauncher" ""
+    ;IfFileExists "$Python39Path\py.exe" 0 +2
+    ;    Goto PathFound39
 
     ; Python not found, prompt for installation
     MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
@@ -208,12 +214,12 @@ Function CheckNeededPythonVersionForPackages
     StrCpy $PythonPackageNeededPath ""
 
     ; Try user-specific installation path
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +2
+    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +3
         StrCpy $PythonPackageNeededPath "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot"
         Goto PathFound
 
     ; Try system-wide installation path
-    IfFileExists "C:\Program Files\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +2
+    IfFileExists "C:\Program Files\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +3
         StrCpy $PythonPackageNeededPath "C:\Program Files\Python$PythonPackageNeededVersionNoDot"
         Goto PathFound
 
@@ -222,10 +228,11 @@ Function CheckNeededPythonVersionForPackages
     IfFileExists "$PythonPackageNeededPath\python.exe" 0 +2
         Goto PathFound
 
+    ; DOES NOT WORK, py.exe is not being handled if founf
     ; Try registry (32-bit on 64-bit Windows)
-    ReadRegStr $PythonPackageNeededPath HKLM "SOFTWARE\WOW6432Node\Python\PythonCore\$PythonPackageNeededVersionDot\InstallPath" ""
-    IfFileExists "$PythonPackageNeededPath\python.exe" 0 +2
-        Goto PathFound
+    ;ReadRegStr $PythonPackageNeededPath HKLM "SOFTWARE\WOW6432Node\Python\PyLauncher" ""
+    ;IfFileExists "$PythonPackageNeededPath\py.exe" 0 +2
+    ;    Goto PathFound39
 
     ; Python not found, prompt for installation
     MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersionDot ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
