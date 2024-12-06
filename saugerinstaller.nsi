@@ -3,7 +3,7 @@
 
 Name "DerSauger"
 OutFile "DerSaugerInstaller.exe"
-InstallDir "$APPDATA\DerSauger"
+InstallDir "$LOCALAPPDATA\Programs\DerSauger"
 RequestExecutionLevel user
 
 ; Unicode support
@@ -32,28 +32,6 @@ Page custom InstallOptionsPage InstallOptionsLeave
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_LANGUAGE "German"
-
-
-; Add at top with other variables
-Var Username
-
-; Add this function to get username early in the installation
-Function GetUsername
-    ; Try environment variable first
-    System::Call 'kernel32::GetEnvironmentVariable(t "USERNAME", t .r0, i ${NSIS_MAX_STRLEN}) i.r1'
-    ${If} $1 != 0
-        StrCpy $Username $0
-    ${Else}
-        ; Fallback to WinAPI if environment variable fails
-        System::Call 'advapi32::GetUserName(t .r0, *i ${NSIS_MAX_STRLEN}) i.r1'
-        ${If} $1 != 0
-            StrCpy $Username $0
-        ${Else}
-            MessageBox MB_OK "Fehler: Konnte Benutzernamen nicht ermitteln."
-            Abort
-        ${EndIf}
-    ${EndIf}
-FunctionEnd
 
 
 ; Add these variables at the top with other Var declarations
@@ -89,7 +67,6 @@ Section "Installieren"
 
     Call CheckWhereExe
     Call CheckWingetExe
-    Call GetUsername
 
     SetOutPath "$INSTDIR"
     File /r "DerSauger\*.*"
@@ -154,8 +131,8 @@ Function CheckPython39
         Goto PathFound39
 
     ; Try user-specific installation path
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python39\python.exe" 0 +3
-        StrCpy $Python39Path "C:\Users\$Username\AppData\Local\Programs\Python\Python39"
+    IfFileExists "$LOCALAPPDATA\Programs\Python\Python39\python.exe" 0 +3
+        StrCpy $Python39Path "$LOCALAPPDATA\Programs\Python\Python39"
         Goto PathFound39
 
     ; Try registry (32-bit on 64-bit Windows)
@@ -224,8 +201,8 @@ Function CheckNeededPythonVersionForPackages
         Goto PathFound
 
     ; Try user-specific installation path
-    IfFileExists "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +3
-        StrCpy $PythonPackageNeededPath "C:\Users\$Username\AppData\Local\Programs\Python\Python$PythonPackageNeededVersionNoDot"
+    IfFileExists "$LOCALAPPDATA\Programs\Python\Python$PythonPackageNeededVersionNoDot\python.exe" 0 +3
+        StrCpy $PythonPackageNeededPath "$LOCALAPPDATA\Programs\Python\Python$PythonPackageNeededVersionNoDot"
         Goto PathFound
 
 
