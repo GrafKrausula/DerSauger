@@ -185,8 +185,8 @@ FunctionEnd
 
 Function CheckNeededPythonVersionForPackages
     ; Set the required Python version
-    StrCpy $PythonPackageNeededVersionDot "3.13"
-    StrCpy $PythonPackageNeededVersionNoDot "313"
+    StrCpy $PythonPackageNeededVersionDot "3.12"
+    StrCpy $PythonPackageNeededVersionNoDot "312"
     ; Initialize the Python path variable
     StrCpy $PythonPackageNeededPath ""
 
