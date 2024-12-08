@@ -16,7 +16,7 @@ import zipfile
 from zipfile import ZipFile
 import subprocess
 from subprocess import Popen, PIPE
-from os import walk
+from os import wait, walk
 import os, shutil, glob
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
@@ -277,6 +277,21 @@ def startUpdater():
         send_message('{"Error in update function: %s"}' %e)
         create_crashlog('Error in update function: %s\n%s' %(e, traceback.format_exc()))
 
+    return True
+
+
+'''
+
+def startUpdater():
+    send_message('{"Info": startUpdater() started}')
+
+    # Extend functionality to update youtube-dl
+    try:
+        update_youtube_dl()
+    except Exception as e:
+        send_message('{"Error in update function: %s"}' %e)
+        create_crashlog('Error in update function: %s\n%s' %(e, traceback.format_exc()))
+
     try:
 
         local_version_path = os.path.join(getScriptPath(), 'version.txt')
@@ -319,7 +334,7 @@ def startUpdater():
 
     return True
 
-'''
+
 def startUpdater():
     send_message('{"Info": startUpdater() started}')
 
@@ -395,11 +410,13 @@ def update_youtube_dl():
         process.wait()
         if process.returncode == 0:
             send_message('{"Info": youtube-dl updated successfully}')
+            return True
         else:
-            send_message('{"Error": "youtube-dl update failed", "stderr": "%s"}' % stderr.decode('utf-8'))
+            send_message('{"Error": "youtube-dl update failed", "stderr": "%s"}' % sys.stderr.decode('utf-8'))
     except Exception as e:
         send_message('{"Error": "Exception during youtube-dl update", "exception": "%s"}' % str(e))
         wait(1)
+        return False
 
 def debug(self,func,input):
   try:

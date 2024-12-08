@@ -38,9 +38,9 @@ def scale_png_to_sizes(input_file, output_folder):
                     ico_images.append(resized_img)
             
             # Create an .ico file
-            ico_path = os.path.join(output_folder, f"icon.ico")
-            ico_images[0].save(ico_path, format='ICO', sizes=[(size, size) for size in [16, 32, 48, 64]])
-            print(f"Saved: {ico_path}")
+            # ico_path = os.path.join(output_folder, f"icon.ico")
+            # ico_images[0].save(ico_path, format='ICO', sizes=[(size, size) for size in [16, 32, 48, 64]])
+            # print(f"Saved: {ico_path}")
 
     except Exception as e:
         print(f"An error occurred: {e}")

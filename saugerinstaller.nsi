@@ -1,5 +1,5 @@
 ; Top level definitions
-!define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo"
+!define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.dersauger.echo"
 
 
 Name "DerSauger"
@@ -32,7 +32,7 @@ Page custom InstallOptionsPage InstallOptionsLeave
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
-!insertmacro MUI_LANGUAGE "German"
+!insertmacro MUI_LANGUAGE "English"
 
 
 ; Add these variables at the top with other Var declarations
@@ -44,7 +44,7 @@ Function CheckWhereExe
     ClearErrors
     SearchPath $WhereExePath "where.exe"
     ${If} ${Errors}
-        MessageBox MB_OK "where.exe nicht gefunden. Installation wird abgebrochen."
+        MessageBox MB_OK "where.exe not found. Installation will be aborted."
         Abort
     ${EndIf}
 FunctionEnd
@@ -56,7 +56,7 @@ Function CheckWingetExe
     Pop $0
     Pop $1
     ${If} $0 != 0
-        MessageBox MB_OK "winget.exe nicht gefunden. Installation wird abgebrochen."
+        MessageBox MB_OK "winget.exe not found. Installation will be aborted."
         Abort
     ${EndIf}
     ; Store first line of output (path to winget)
@@ -64,7 +64,7 @@ Function CheckWingetExe
 FunctionEnd
 
 
-Section "Installieren"
+Section "Install"
 
     Call CheckWhereExe
     Call CheckWingetExe
@@ -97,22 +97,22 @@ Section "Installieren"
     ReadRegStr $R2 HKCU "${REG_KEY}" ""
     StrCmp $R2 "" RegKeyNotFound
 
-    MessageBox MB_YESNO "Der Registrierungseintrag fuer den Native Messaging Host existiert bereits. Ueberschreiben?" IDYES RegOverwrite IDNO RegSkip
+    MessageBox MB_YESNO "The registry entry for the Native Messaging Host already exists. Overwrite?" IDYES RegOverwrite IDNO RegSkip
     RegOverwrite:
-        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.example.echo-win.json"
+        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
         Goto RegKeyDone
     RegSkip:
-        MessageBox MB_OK "Der bestehende Registrierungseintrag wurde nicht geaendert."
+        MessageBox MB_OK "The existing registry entry was not changed."
         Goto RegKeyDone
 
     RegKeyNotFound:
-        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.example.echo-win.json"
+        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
 
     RegKeyDone:
     
-    ExecShell "open" "notepad.exe" '"$INSTDIR\README.txt"'
+    ExecShell "open" "notepad.exe" '"$INSTDIR\README.md"'
     ${If} ${Errors}
-        MessageBox MB_OK "Hinweis: README.txt konnte nicht automatisch geoeffnet werden. Sie finden die Datei in: $INSTDIR\README.txt"
+        MessageBox MB_OK "Note: README.txt could not be opened automatically. You can find the file at: $INSTDIR\README.txt"
     ${EndIf}
 
 SectionEnd
@@ -148,7 +148,7 @@ Function CheckPython39
     ;    Goto PathFound39
 
     ; Python not found, prompt for installation
-    MessageBox MB_OKCANCEL "Python 3.9 ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+    MessageBox MB_OKCANCEL "Python 3.9 is not installed. Would you like to install it now?" IDOK InstallNow IDCANCEL CancelInstall
 
     InstallNow:
         ; Install Python 3.9 using winget
@@ -163,14 +163,14 @@ Function CheckPython39
         Return
 
     PythonInstallError:
-        MessageBox MB_OK "Fehler bei der Installation von Python 3.9."
+        MessageBox MB_OK "Error installing Python 3.9."
         Abort
 
     CancelInstall:
         Abort
 
     PathFound39:
-        MessageBox MB_OK "Python 3.9 gefunden unter: $Python39Path"
+        MessageBox MB_OK "Python 3.9 found at: $Python39Path"
     FunctionEnd
 
 Function InstallPython39Venv
@@ -178,7 +178,7 @@ Function InstallPython39Venv
     ExecWait '"$Python39Path\python.exe" -m venv "$INSTDIR\python39_venv"' $0
     IntCmp $0 0 VenvSuccess VenvError VenvError
     VenvError:
-        MessageBox MB_OK "Fehler beim Erstellen der Python 3.9 virtuellen Umgebung."
+        MessageBox MB_OK "Error creating Python 3.9 virtual environment."
         Abort
     VenvSuccess:
 FunctionEnd
@@ -214,7 +214,7 @@ Function CheckNeededPythonVersionForPackages
     ;    Goto PathFound39
 
     ; Python not found, prompt for installation
-    MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersionDot ist nicht installiert. Möchten Sie es jetzt installieren?" IDOK InstallNow IDCANCEL CancelInstall
+    MessageBox MB_OKCANCEL "Python $PythonPackageNeededVersionDot is not installed. Would you like to install it now?" IDOK InstallNow IDCANCEL CancelInstall
 
     InstallNow:
         ; Install Python using winget
@@ -229,14 +229,14 @@ Function CheckNeededPythonVersionForPackages
         Return
 
     PythonInstallError:
-        MessageBox MB_OK "Fehler bei der Installation von Python $PythonPackageNeededVersionDot."
+        MessageBox MB_OK "Error installing Python $PythonPackageNeededVersionDot."
         Abort
 
     CancelInstall:
         Abort
 
     PathFound:
-        MessageBox MB_OK "Python $PythonPackageNeededVersionDot gefunden unter: $PythonPackageNeededPath"
+        MessageBox MB_OK "Python $PythonPackageNeededVersionDot found at: $PythonPackageNeededPath"
     FunctionEnd
 
 Function InstallNeededPythonVersionForPackagesVenv
@@ -244,7 +244,7 @@ Function InstallNeededPythonVersionForPackagesVenv
     ExecWait '"$PythonPackageNeededPath\python.exe" -m venv "$INSTDIR\packages_venv"' $0
     IntCmp $0 0 PythonPackageInstallSuccess PythonPackageInstallError PythonPackageInstallError
     PythonPackageInstallError:
-        MessageBox MB_OK "Fehler beim Installieren der Python Version fuer Pakete."
+        MessageBox MB_OK "Error installing the required Python version for packages."
         Abort
     PythonPackageInstallSuccess:
 FunctionEnd
@@ -254,7 +254,7 @@ Function InstallYtDlp
     ExecWait '"$INSTDIR\packages_venv\Scripts\python.exe" -m pip install --no-deps -U yt-dlp' $0
     IntCmp $0 0 YtDlpSuccess YtDlpError YtDlpError
     YtDlpError:
-        MessageBox MB_OK "Fehler bei der Installation von yt-dlp."
+        MessageBox MB_OK "Error installing yt-dlp."
         Abort
     YtDlpSuccess:
 FunctionEnd
@@ -265,7 +265,7 @@ Function InstallFFmpeg
     ExecWait '$WingetExePath install --id Gyan.FFmpeg --silent' $0
     IntCmp $0 0 FFmpegInstallSuccess FFmpegInstallError FFmpegInstallError
     FFmpegInstallError:
-        MessageBox MB_OK "Fehler bei der Installation von FFmpeg ueber winget."
+        MessageBox MB_OK "Error installing FFmpeg via winget."
         Return
     FFmpegInstallSuccess:
         Return
@@ -279,11 +279,11 @@ Function InstallOptionsPage
         Abort
     ${EndIf}
 
-    ${NSD_CreateCheckbox} 10 10 100% 12u "FFmpeg-Backend installieren"
+    ${NSD_CreateCheckbox} 10 10 100% 12u "Install FFmpeg backend"
     Pop $FFmpegCheckbox
     ${NSD_SetState} $FFmpegCheckbox ${BST_CHECKED}
 
-    ${NSD_CreateCheckbox} 10 30 100% 12u "yt-dlp Backend installieren"
+    ${NSD_CreateCheckbox} 10 30 100% 12u "Install yt-dlp backend"
     Pop $YtDlpCheckbox
     ${NSD_SetState} $YtDlpCheckbox ${BST_CHECKED}
 
@@ -301,7 +301,7 @@ Section "Uninstall"
     RmDir "$INSTDIR"
 
     DeleteRegKey HKCU "${REG_KEY}"
-    MessageBox MB_OK "Die Registrierungseintraege wurden entfernt."
+    MessageBox MB_OK "The registry entries have been removed."
 
-    MessageBox MB_OK "Die Chrome-Erweiterung wurde deinstalliert."
+    MessageBox MB_OK "The Chrome extension has been uninstalled."
 SectionEnd

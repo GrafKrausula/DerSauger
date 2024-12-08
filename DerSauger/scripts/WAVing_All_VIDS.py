@@ -16,26 +16,20 @@ def getfilelist(filetype, path):
 
     allfiles = []
     allfiles = os.listdir(path)
-
     #print(allfiles)
     filetypefiles = []
-
     for file in allfiles:
         if f".{filetype}" in file:
             filetypefiles.append(file)
 
     #print(webmfiles)
-
     return filetypefiles
 
 def getfilelists(convertpath,supportedfiletypes):
 
     filelists = []
-
     print("Supported Formats: ", supportedfiletypes)
-
     for supportedfiletype in supportedfiletypes:
-
         #print(supportedfiletype)
         filelists.append(getfilelist(supportedfiletype,convertpath))
 
@@ -89,7 +83,6 @@ def createconvertcmd(convertpath,supportedfiletypes):
     convertcmd+= ' " '
 
     print(convertcmd)
-
     return convertcmd
 
 def makedir(convertpath,new_fldr_name):
@@ -214,7 +207,6 @@ def Main():
     convertpath = "E:\RENDER OUTPUT"
     downloadpath = "E:\Runterladungen!"
     convertformat = "wav"
-    #downloadpath2 = "C:/Users/Maddin/AppData/Local/Packages/CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc/LocalState/rootfs/home/maddin/yt-dl"
 
     #als methode auslagern
     if len(sys.argv)>4: #Remember that sys.argv[0] is the name of the script

@@ -26,7 +26,7 @@ function onDisconnected() {
 
 async function connect() {
   connected = true;
-  var hostName = "com.google.chrome.example.echo";
+  var hostName = "com.google.chrome.dersauger.echo";
   console.log("Connecting to native messaging host <b>" + hostName + "</b>")
   port = chrome.runtime.connectNative(hostName);
   port.onMessage.addListener(onNativeMessage);
