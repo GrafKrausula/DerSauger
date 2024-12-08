@@ -303,6 +303,7 @@ def startUpdater():
     except Exception as e:
         send_message('{"Error in update function: %s"}' %e)
         create_crashlog('Error in update function: %s\n%s' %(e, traceback.format_exc()))
+        return False
 
     updatercopy_path = copyUpdater()
     send_message('{"Info": startUpdater() updatercopy_path: %s}' % updatercopy_path)
@@ -389,7 +390,7 @@ def copyUpdater():
 def update_youtube_dl():
     send_message('{"Info": Starting youtube-dl update}')
     try:
-        process = subprocess.Popen("PYTHONNEWBINARYPATH_absolute -m yt-dlp -U", creationflags=CREATE_NEW_CONSOLE)
+        process = subprocess.Popen(f"{PACKAGES_VENV_PATH_ABSOLUTE} -m yt-dlp -U", creationflags=CREATE_NEW_CONSOLE)
         process.poll()
         process.wait()
         if process.returncode == 0:

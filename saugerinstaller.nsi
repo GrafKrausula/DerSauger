@@ -1,6 +1,9 @@
 ; Top level definitions
 !define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo"
 
+BrandingText " "
+Icon icon.ico
+
 Name "DerSauger"
 OutFile "DerSaugerInstaller.exe"
 InstallDir "$LOCALAPPDATA\Programs\DerSauger"

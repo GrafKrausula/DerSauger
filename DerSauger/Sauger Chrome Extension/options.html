@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head><title>My Test Extension Options</title></head>
+<head>
+    <title>My Test Extension Options</title>
+    <style>
+        .path-container { display: flex; margin-bottom: 10px; }
+        .path-input { flex: 1; margin-right: 5px; }
+        .picker-button { min-width: 80px; }
+    </style>
+</head>
 <body>
 
 <form>
-  <label for="downloadpath">Speicherort gesaugter Dateien:</label><br>
-  <input type="text" id="downloadpath" name="downloadpath"><br>
-  <label for="convertpath">Speicherort konvertierter Dateien:</label><br>
-  <input type="text" id="convertpath" name="convertpath">
+    <label for="downloadpath">Speicherort gesaugter Dateien:</label><br>
+    <div class="path-container">
+        <input type="text" id="downloadpath" name="downloadpath" class="path-input">
+        <button type="button" id="downloadpath-picker" class="picker-button">Choose...</button>
+    </div>
+    <label for="convertpath">Speicherort konvertierter Dateien:</label><br>
+    <div class="path-container">
+        <input type="text" id="convertpath" name="convertpath" class="path-input">
+        <button type="button" id="convertpath-picker" class="picker-button">Choose...</button>
+    </div>
 </form>
 
 <label>
