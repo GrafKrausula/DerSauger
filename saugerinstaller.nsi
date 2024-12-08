@@ -1,8 +1,6 @@
 ; Top level definitions
 !define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo"
 
-; BrandingText " "
-; Icon icon.ico
 
 Name "DerSauger"
 OutFile "DerSaugerInstaller.exe"
@@ -13,9 +11,9 @@ RequestExecutionLevel user
 Unicode True
 
 !include "MUI2.nsh"
-!include "nsDialogs.nsh"
+;!include "nsDialogs.nsh"
 !include "FileFunc.nsh"
-!include "LogicLib.nsh"
+;!include "LogicLib.nsh"
 
 Var Dialog
 Var FFmpegCheckbox
