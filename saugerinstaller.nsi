@@ -2,7 +2,7 @@
 !define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.example.echo"
 
 BrandingText " "
-Icon icon.ico
+; Icon icon.ico
 
 Name "DerSauger"
 OutFile "DerSaugerInstaller.exe"
