@@ -46,7 +46,7 @@ function restore_options() {
   get_options()
 }
 
-function restore_options_KRSE() {
+function restore_options_prttyp() {
   // Use default value color = 'red' and likesColor = true.
   chrome.storage.sync.set({
     favouriteFormat: 'wav',
@@ -106,41 +106,12 @@ function update_script() {
   status.textContent = 'Status: Update invoked. Close this page and wait.';
 }
 
-async function pickDirectory(inputId) {
-  try {
-    const dirHandle = await window.showDirectoryPicker();
-    const path = dirHandle.name; // For security reasons, we can only get the directory name
-    document.getElementById(inputId).value = path;
-    var status = document.getElementById('status');
-    status.textContent = 'Status: Directory selected: ' + path;
-    setTimeout(function() {
-      status.textContent = 'Status: ';
-    }, 750);
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      var status = document.getElementById('status');
-      status.textContent = 'Status: Error selecting directory: ' + err.message;
-      setTimeout(function() {
-        status.textContent = 'Status: ';
-      }, 1500);
-    }
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  get_options();
-  document.getElementById('downloadpath-picker').addEventListener('click', 
-    () => pickDirectory('downloadpath'));
-  document.getElementById('convertpath-picker').addEventListener('click', 
-    () => pickDirectory('convertpath'));
-});
-
 document.addEventListener('DOMContentLoaded', get_options);
 document.getElementById('reset').addEventListener('click',
     restore_options);
 document.getElementById('save').addEventListener('click',
     save_options);
-document.getElementById('KRSE').addEventListener('click',
-    restore_options_KRSE);
+document.getElementById('prttyp').addEventListener('click',
+    restore_options_prttyp);
 document.getElementById('UPDATE').addEventListener('click',
     update_script);

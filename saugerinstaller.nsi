@@ -1,9 +1,9 @@
 ; Top level definitions
 !define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.dersauger.echo"
-
+BrandingText " "
 
 Name "DerSauger"
-OutFile "DerSaugerInstaller.exe"
+OutFile "DerSaugerInstallerV1.0.exe"
 InstallDir "$LOCALAPPDATA\Programs\DerSauger"
 RequestExecutionLevel user
 
@@ -112,7 +112,7 @@ Section "Install"
     
     ExecShell "open" "notepad.exe" '"$INSTDIR\README.md"'
     ${If} ${Errors}
-        MessageBox MB_OK "Note: README.txt could not be opened automatically. You can find the file at: $INSTDIR\README.txt"
+        MessageBox MB_OK "Note: README.md could not be opened automatically. You can find the file at: $INSTDIR\README.txt"
     ${EndIf}
 
 SectionEnd
@@ -170,7 +170,7 @@ Function CheckPython39
         Abort
 
     PathFound39:
-        MessageBox MB_OK "Python 3.9 found at: $Python39Path"
+        ;MessageBox MB_OK "Python 3.9 found at: $Python39Path"
     FunctionEnd
 
 Function InstallPython39Venv
@@ -236,7 +236,7 @@ Function CheckNeededPythonVersionForPackages
         Abort
 
     PathFound:
-        MessageBox MB_OK "Python $PythonPackageNeededVersionDot found at: $PythonPackageNeededPath"
+        ;MessageBox MB_OK "Python $PythonPackageNeededVersionDot found at: $PythonPackageNeededPath"
     FunctionEnd
 
 Function InstallNeededPythonVersionForPackagesVenv
