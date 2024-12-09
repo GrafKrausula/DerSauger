@@ -2,7 +2,7 @@
   // Extension ID: knldjmfmopnpolahpmmgbagdohdnhkik
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDcBHwzDvyBQ6bDppkIs9MP4ksKqCMyXQ/A52JivHZKh4YO/9vJsT3oaYhSpDCE9RPocOEQvwsHsFReW2nUEc6OLLyoCFFxIb7KkLGsmfakkut/fFdNJYh0xOTbSN8YvLWcqph09XAY2Y/f0AL7vfO1cuCqtkMt8hFrBGWxDdf9CQIDAQAB",
   "name": "Der Sauger",
-  "description": "Er saugt dir mit STRG+LEERTASTE alles aus dem Netz",
+  "description": "It saugt (sucks) you with STRG+LEERTASTE (CTRL+SPACEBAR) everything out of the net",
   "version": "1.0",
   "manifest_version": 3,
   "options_ui": {
@@ -25,21 +25,21 @@
       }
     },
     "wav": {
-      "description": "Direktes Sauging und WAV-konvertiering",
+      "description": "Direct Sauging,then WAV-converting",
       "suggested_key": {
         "default": "Shift+Alt+W",
         "mac": "Shift+Alt+W"
       }
     },
     "mp3": {
-      "description": "Direktes Sauging und mp3-konvertiering",
+      "description": "Direct Sauging, then mp3-converting",
       "suggested_key": {
         "default": "Shift+Alt+3",
         "mac": "Shift+Alt+3"
       }
     },
     "mp4": {
-      "description": "Direktes Sauging und mp4-konvertiering",
+      "description": "Direct Sauging, then mp4-konvertiering",
       "suggested_key": {
         "default": "Shift+Alt+4",
         "mac": "Shift+Alt+4"

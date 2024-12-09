@@ -11,38 +11,43 @@ import traceback
 import json
 import os
 import pathlib
+import glob
 from pathlib import Path
 import zipfile
 from zipfile import ZipFile
 import subprocess
 from subprocess import Popen, PIPE
-from os import wait, walk
-import os, shutil, glob
 from subprocess import Popen, CREATE_NEW_CONSOLE
 
 
 
 # Get the absolute path of the current script's directory
 # Example: If script is at C:\MyApp\nativeMessaging\native-messaging-example-host.py
-# Then script_dir will be C:\MyApp
+# Then script_dir will be C:\MyApp\nativeMessaging
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Configure paths to Python interpreters in virtual environments
 # Relative paths go up one level (..) from host directory
-PYTHON39_VENV_PATH_RELATIVE = "..\\python39_venv\\Scripts\\python.exe"
+PYTHON39_VENV_PATH_RELATIVE = "..\\python39_venv\\Scripts"
 PYTHON39_VENV_PATH_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PYTHON39_VENV_PATH_RELATIVE))
+
+PYTHON39_VENV_PATH_EXE_RELATIVE = "..\\python39_venv\\Scripts\\python.exe"
+PYTHON39_VENV_PATH_EXE_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PYTHON39_VENV_PATH_EXE_RELATIVE))
 # Example resolved absolute path: C:\MyApp\python39_venv\Scripts\python.exe
 
-PACKAGES_VENV_PATH_RELATIVE = "..\\packages_venv\\Scripts\\python.exe"
+PACKAGES_VENV_PATH_RELATIVE = "..\\packages_venv\\Scripts"
 PACKAGES_VENV_PATH_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PACKAGES_VENV_PATH_RELATIVE))
+
+PACKAGES_VENV_PATH_EXE_RELATIVE = "..\\packages_venv\\Scripts\\python.exe"
+PACKAGES_VENV_PATH_EXE_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PACKAGES_VENV_PATH_EXE_RELATIVE))
 # Example resolved absolute path: C:\MyApp\packages_venv\Scripts\python.exe
 
 # Verify paths exist
-if not os.path.exists(PYTHON39_VENV_PATH_ABSOLUTE):
-    raise FileNotFoundError(f"Python 3.9 interpreter not found at: {PYTHON39_VENV_PATH_ABSOLUTE}")
+if not os.path.exists(PYTHON39_VENV_PATH_EXE_ABSOLUTE):
+    raise FileNotFoundError(f"Python 3.9 interpreter not found at: {PYTHON39_VENV_PATH_EXE_ABSOLUTE}")
 
-if not os.path.exists(PACKAGES_VENV_PATH_ABSOLUTE):
-    raise FileNotFoundError(f"Packages venv interpreter not found at: {PACKAGES_VENV_PATH_ABSOLUTE}")
+if not os.path.exists(PACKAGES_VENV_PATH_EXE_ABSOLUTE):
+    raise FileNotFoundError(f"Packages venv interpreter not found at: {PACKAGES_VENV_PATH_EXE_ABSOLUTE}")
 
 
 
@@ -117,7 +122,7 @@ def wavingTheVids(format,downloadpath,convertpath):
 
     send_message('{"Info": Waving All Vids %s}' % len(cmd_threads))
     openScriptCmd = f'cmd /c "cd /d "{convertscriptpath}"'
-    openScriptCmd +=f' && "{PYTHON39_VENV_PATH_ABSOLUTE}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
+    openScriptCmd +=f' && "{PYTHON39_VENV_PATH_EXE_ABSOLUTE}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
     openScriptCmd += ' " '
     send_message('{"openScriptCmd": %s}' % openScriptCmd)
     process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
@@ -127,7 +132,7 @@ def createdownloadcmd(url,downloadpath):
 
     send_message('{"Info": createdownloadcmd started: %s}' %url)
     downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
-    downloadcmd+= f' && "{PACKAGES_VENV_PATH_ABSOLUTE}" -m yt_dlp -f bestvideo+bestaudio/best {url}'
+    downloadcmd+= f' && "{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -f bestvideo+bestaudio/best {url}'
     downloadcmd+= ' " '
     send_message('{"cmd": %s}' % downloadcmd)
     return downloadcmd
@@ -404,18 +409,31 @@ def copyUpdater():
 
 def update_youtube_dl():
     send_message('{"Info": Starting youtube-dl update}')
+
     try:
-        process = subprocess.Popen(f"{PACKAGES_VENV_PATH_ABSOLUTE} -m yt-dlp -U", creationflags=CREATE_NEW_CONSOLE)
+        # Update youtube-dl using the packages venv
+
+        # Path to the activate script
+        PACKAGES_VENV_PATH_ABSOLUTE_ACTIVATE = os.path.normpath(os.path.join(PACKAGES_VENV_PATH_ABSOLUTE, 'activate.bat'))  # Path to the activate script
+        UPDATE_COMMAND = f"{PACKAGES_VENV_PATH_ABSOLUTE_ACTIVATE};yt-dlp -U"
+        send_message('{"Info": youtube-dl update started with: %s}' % UPDATE_COMMAND)
+
+        # Start the update process in a new console window
+        process = subprocess.Popen(f"{UPDATE_COMMAND}", 
+                                   creationflags=CREATE_NEW_CONSOLE)
+ 
+        # Wait for the process to finish
         process.poll()
         process.wait()
+
         if process.returncode == 0:
             send_message('{"Info": youtube-dl updated successfully}')
             return True
         else:
-            send_message('{"Error": "youtube-dl update failed", "stderr": "%s"}' % sys.stderr.decode('utf-8'))
+            send_message(f'{"Error": "youtube-dl update failed"}')
+            return False
     except Exception as e:
         send_message('{"Error": "Exception during youtube-dl update", "exception": "%s"}' % str(e))
-        wait(1)
         return False
 
 def debug(self,func,input):

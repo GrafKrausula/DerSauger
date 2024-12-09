@@ -3,7 +3,7 @@
 BrandingText " "
 
 Name "DerSauger"
-OutFile "DerSaugerInstallerV1.0.exe"
+OutFile "DerSaugerInstaller_V1.0_Beta.exe"
 InstallDir "$LOCALAPPDATA\Programs\DerSauger"
 RequestExecutionLevel user
 
@@ -35,11 +35,10 @@ Page custom InstallOptionsPage InstallOptionsLeave
 !insertmacro MUI_LANGUAGE "English"
 
 
-; Add these variables at the top with other Var declarations
 Var WhereExePath
 Var WingetExePath
 
-; Add this function to check for where.exe
+; this function checks for where.exe
 Function CheckWhereExe
     ClearErrors
     SearchPath $WhereExePath "where.exe"
@@ -49,7 +48,7 @@ Function CheckWhereExe
     ${EndIf}
 FunctionEnd
 
-; Add this function to check for winget.exe
+; this function checks for winget.exe
 Function CheckWingetExe
     ClearErrors
     nsExec::ExecToStack '"$WhereExePath" winget.exe'
@@ -197,7 +196,7 @@ Function CheckNeededPythonVersionForPackages
     ;     Goto PathFound
 
     ; Try registry (64-bit)
-    ReadRegStr $PythonPackageNeededPath HKLM "SOFTWARE\Python\PythonCore\$PythonPackageNeededVersionDot\InstallPath" ""
+    ReadRegStr $PythonPackageNeededPath HKCU "SOFTWARE\Python\PythonCore\$PythonPackageNeededVersionDot\InstallPath" ""
     IfFileExists "$PythonPackageNeededPath\python.exe" 0 +2
         Goto PathFound
 
