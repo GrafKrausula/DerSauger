@@ -1,0 +1,9 @@
+{
+  "name": "com.google.chrome.dersauger.echo",
+  "description": "Der Sauger native messaging python Host",
+  "path": "DerSauger_native_messaging_host.bat",
+  "type": "stdio",
+  "allowed_extensions": [
+    "dersauger@example.com"
+  ]
+}

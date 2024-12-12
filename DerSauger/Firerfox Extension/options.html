@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>My Test Extension Options</title></head>
+<body>
+
+<form>
+  <label for="downloadpath">Speicherort gesaugter Dateien:</label><br>
+  <input type="text" id="downloadpath" name="downloadpath"><br>
+  <label for="convertpath">Speicherort konvertierter Dateien:</label><br>
+  <input type="text" id="convertpath" name="convertpath">
+</form>
+
+<label>
+  <input type="checkbox" id="convert">
+  Dateien Nach dem Saugen Konvertieren
+</label><br>
+
+<form>
+  Endformat:
+  <input type="text" id="format" name="format">
+</form><br>
+
+<div id="status"></div>
+
+<button id="save">Save</button>
+<button id="reset">Reset</button>
+<button id="prttyp">prttyp</button>
+<button style="float:right;" id="UPDATE">UPDATE</button>
+
+<script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+    "name": "Der Sauger",
+    "description": "It saugt (sucks) you with CTRL+SPACEBAR everything out of the net",
+    "version": "1.0",
+    "manifest_version": 2,
+    "applications": {
+      "gecko": {
+        "id": "dersauger@example.com",
+        "strict_min_version": "57.0"
+      }
+    },
+    "options_ui": {
+      "page": "options.html",
+      "open_in_tab": false
+    },
+    "background": {
+      "scripts": ["background.js"]
+    },
+    "commands": {
+      "toggle": {
+        "description": "Direktes Sauging",
+        "suggested_key": {
+          "default": "Ctrl+Space"
+        }
+      },
+      "wav": {
+        "description": "Direct Sauging, then WAV-converting",
+        "suggested_key": {
+          "default": "Shift+Alt+W"
+        }
+      },
+      "mp3": {
+        "description": "Direct Sauging, then MP3-converting",
+        "suggested_key": {
+          "default": "Shift+Alt+3"
+        }
+      },
+      "mp4": {
+        "description": "Direct Sauging, then MP4-konvertiering",
+        "suggested_key": {
+          "default": "Shift+Alt+4"
+        }
+      }
+    },
+    "action": {
+      "default_title": "Der Sauger"
+    },
+    "icons": {
+      "16": "images/Sauger_16.png",
+      "32": "images/Sauger_32.png",
+      "48": "images/Sauger_48.png",
+      "128": "images/Sauger_128.png"
+    },
+    "permissions": ["tabs", "nativeMessaging", "activeTab", "storage"]
+  }
+  
