@@ -1,3 +1,4 @@
+import zipfile
 import os
 import subprocess
 import sys
@@ -12,12 +13,28 @@ def check_command(command, install_instructions):
         print(f"Install it by running: {install_instructions}\n")
         sys.exit(1)
 
+def check_nsis():
+    """Check for NSIS availability and fallback to alternative path if necessary."""
+    try:
+        # Attempt to check using default `makensis`
+        subprocess.run(["makensis", "/VERSION"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        return "makensis"
+    except FileNotFoundError:
+        alternative_path = r"C:\Program Files (x86)\NSIS\makensis.exe"
+        if os.path.exists(alternative_path):
+            print(f"Using alternative NSIS path: {alternative_path}")
+            return alternative_path
+        else:
+            print("Error: NSIS is not installed.")
+            print("Install it by running: winget install NSIS.NSIS\n")
+            sys.exit(1)
+
 def check_prerequisites():
     """Ensure all prerequisites are met."""
     print("Checking prerequisites...")
 
     # Check for NSIS
-    check_command(["makensis", "/VERSION"], "winget install NSIS.NSIS")
+    nsis_path = check_nsis()
 
     # Check for Git
     check_command(["git", "--version"], "winget install Git.Git")
@@ -40,6 +57,7 @@ def check_prerequisites():
         print("Virtual environment created. Activate it with: .\\venv\\Scripts\\activate (on Windows)")
 
     print("All prerequisites are met!\n")
+    return nsis_path
 
 def install_requirements():
     """Install required Python packages."""
@@ -67,8 +85,40 @@ def generate_icons():
         scale_png_to_sizes(input_file, folder)
     print("Icons generated successfully!\n")
 
+def zip_firefox_extension():
+    """Package the Firefox extension into a zip file."""
+    print("Zipping Firefox extension...")
+    firefox_folder = r".\DerSauger\Firefox Extension"
+    zip_file = r".\DerSauger\Firefox_Extension.zip"
+
+    if not os.path.exists(firefox_folder):
+        print(f"Error: {firefox_folder} does not exist.")
+        sys.exit(1)
+
+    with zipfile.ZipFile(zip_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(firefox_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, start=firefox_folder)
+                zipf.write(file_path, arcname)
+    print("Firefox extension packaged successfully!\n")
+
+def build_installer(nsis_path):
+    """Build the installer using NSIS."""
+    print("Building the installer...")
+    nsis_script = r".\saugerinstaller.nsi"
+
+    if not os.path.exists(nsis_script):
+        print(f"Error: {nsis_script} does not exist. Ensure the installer script is available.")
+        sys.exit(1)
+
+    subprocess.run([nsis_path, nsis_script], check=True)
+    print("Installer built successfully!\n")
+
 if __name__ == "__main__":
-    check_prerequisites()
+    nsis_path = check_prerequisites()
     install_requirements()
+    zip_firefox_extension()
+    build_installer(nsis_path)
     generate_icons()
     print("Build process completed successfully!")
