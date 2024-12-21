@@ -15,32 +15,52 @@ def scale_png_to_sizes(input_file, output_folder):
     
     if not os.path.isfile(input_file):
         raise FileNotFoundError(f"{input_file} is not a file")
-    else:
-        file_name, file_ext = os.path.splitext(os.path.basename(input_file))
-        if file_ext.lower() != ".png":
-            raise ValueError(f"{input_file} is not a PNG file")
+    
+    file_name, file_ext = os.path.splitext(os.path.basename(input_file))
+    if file_ext.lower() != ".png":
+        raise ValueError(f"{input_file} is not a PNG file")
 
-    sizes = [16, 32, 48, 64, 128, 256]
-    ico_images = []
+    sizes = [16, 32, 48, 256]  # Standard sizes for ICO files
+    ico_images = {}
+    
     try:
         with Image.open(input_file) as img:
+            img = img.convert("RGBA")  # Ensure the image has an alpha channel
+            
             for size in sizes:
-                # Resize the image
+                # Resize the image to the required size
                 resized_img = img.resize((size, size), Image.Resampling.LANCZOS)
                 
-                # Save the resized image
+                # Save the resized image to the output folder
                 output_file = os.path.join(output_folder, f"{file_name}_{size}.png")
                 resized_img.save(output_file)
                 print(f"Saved: {output_file}")
                 
-                # Add the resized image to the .ico list
-                if size in [16, 32, 48, 64]:  # Include only standard sizes for .ico
-                    ico_images.append(resized_img)
+                # Add the resized image to the dictionary for ICO creation
+                ico_images[size] = resized_img
+
+            # Ensure all required sizes are available
+            required_sizes = set(sizes)
+            available_sizes = set(ico_images.keys())
+            if not required_sizes.issubset(available_sizes):
+                missing_sizes = required_sizes - available_sizes
+                raise ValueError(f"Missing required sizes for ICO file: {missing_sizes}")
             
-            # Create an .ico file
-            # ico_path = os.path.join(output_folder, f"icon.ico")
-            # ico_images[0].save(ico_path, format='ICO', sizes=[(size, size) for size in [16, 32, 48, 64]])
-            # print(f"Saved: {ico_path}")
+            # Define the path for the .ico file
+            ico_path = os.path.join(output_folder, "icon.ico")
+            
+            # Delete existing file if necessary
+            if os.path.exists(ico_path):
+                os.remove(ico_path)
+
+            # Save the .ico file, using the largest size as the base
+            largest_image = ico_images[256]  # Use the 256x256 image as the base
+            largest_image.save(
+                ico_path,
+                format="ICO",
+                sizes=[(size, size) for size in sizes]
+            )
+            print(f"Saved: {ico_path}")
 
     except Exception as e:
         print(f"An error occurred: {e}")

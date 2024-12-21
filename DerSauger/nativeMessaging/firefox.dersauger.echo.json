@@ -1,5 +1,5 @@
 {
-  "name": "com.google.chrome.dersauger.echo",
+  "name": "firefox.dersauger.echo",
   "description": "Der Sauger native messaging python Host",
   "path": "DerSauger_native_messaging_host.bat",
   "type": "stdio",

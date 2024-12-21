@@ -1,11 +1,27 @@
+; Define version once for consistency
+!define VERSION "1.0.0"  ; Change this value for upgrades
+!define POSTFIX "Gamma"  ; Change this value for upgrades
+
+; Define regpaths for installlocation detection
+!define REG_PATH "Software\InternetVacuumMegacorp\DerSauger"
+!define REG_INSTALL_DIR "InstallLocation"
+
 ; Top level definitions
-!define REG_KEY "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.dersauger.echo"
+!define REG_KEY_CHROME "Software\Google\Chrome\NativeMessagingHosts\com.google.chrome.dersauger.echo"
+!define REG_KEY_FREFOX "Software\Mozilla\NativeMessagingHosts\firefox.dersauger.echo"
+
+; Set installer and uninstaller icons
+!define MUI_ICON "DerSauger\Chrome Extension\images\icon.ico"
+!define MUI_UNICON "DerSauger\Chrome Extension\images\icon.ico"
+
+
 BrandingText " "
 
-Name "DerSauger"
-OutFile "DerSaugerInstaller_V1.0_Beta.exe"
+Name "DerSauger ${VERSION} ${POSTFIX}"
+OutFile "DerSaugerInstaller_${VERSION}_${POSTFIX}.exe"
 InstallDir "$LOCALAPPDATA\Programs\DerSauger"
 RequestExecutionLevel user
+
 
 ; Unicode support
 Unicode True
@@ -62,8 +78,40 @@ Function CheckWingetExe
     StrCpy $WingetExePath $1 -2 ; Remove trailing CRLF
 FunctionEnd
 
+; Function to check previous installation
+Function CheckPreviousInstallation
+    ReadRegStr $R0 HKCU "${REG_PATH}" "${REG_INSTALL_DIR}"
+
+    StrCmp $R0 "" NoPreviousInstallation PreviousInstallation
+    
+    ; Previous installation found    
+    PreviousInstallation:
+        MessageBox MB_YESNO "DerSauger is already installed at $R0. Do you want to overwrite it?" IDYES OverwriteInstall IDNO CancelInstall
+        Goto End
+
+    OverwriteInstall:
+        StrCpy $INSTDIR "$R0"
+        Goto End
+    CancelInstall:
+        Abort
+    NoPreviousInstallation:
+        ; No previous installation found
+        ; MessageBox MB_OK "No previous installation found, using previously defined installation dir."
+        Goto End
+    End:
+FunctionEnd
 
 Section "Install"
+
+    ; Check for previous installation
+    Call CheckPreviousInstallation
+    
+
+    ; Check if $INSTDIR exists and remove its contents
+    IfFileExists "$INSTDIR\*" 0 +3
+        RMDir /r "$INSTDIR"
+        MessageBox MB_OK "$INSTDIR and its contents have been removed."
+
 
     Call CheckWhereExe
     Call CheckWingetExe
@@ -93,25 +141,60 @@ Section "Install"
     ; Write uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-    ReadRegStr $R2 HKCU "${REG_KEY}" ""
+    ; Register the uninstaller in Windows
+    WriteRegStr HKCU "${REG_PATH}" "${REG_INSTALL_DIR}" "$INSTDIR"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "DisplayName" "DerSauger"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "UninstallString" "$INSTDIR\Uninstall.exe"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "DisplayIcon" "$INSTDIR\Uninstall.exe"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "Publisher" "InternetVacuumMegacorp"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "DisplayVersion" "${VERSION}"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "InstallLocation" "$INSTDIR"
+    WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "NoModify" 1
+    WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger" "NoRepair" 1
+
+
+    ReadRegStr $R2 HKCU "${REG_KEY_CHROME}" ""
     StrCmp $R2 "" RegKeyNotFound
 
-    MessageBox MB_YESNO "The registry entry for the Native Messaging Host already exists. Overwrite?" IDYES RegOverwrite IDNO RegSkip
+    MessageBox MB_YESNO "The Chrome registry entry for the Native Messaging Host already exists. Overwrite?" IDYES RegOverwrite IDNO RegSkip
     RegOverwrite:
-        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
+        WriteRegStr HKCU "${REG_KEY_CHROME}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
         Goto RegKeyDone
     RegSkip:
-        MessageBox MB_OK "The existing registry entry was not changed."
+        MessageBox MB_OK "The existing Chrome registry entry was not changed."
         Goto RegKeyDone
 
     RegKeyNotFound:
-        WriteRegStr HKCU "${REG_KEY}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
+        WriteRegStr HKCU "${REG_KEY_CHROME}" "" "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
 
     RegKeyDone:
-    
+
+    ; Additional logic for Firefox registry key analogous to Chrome
+    ReadRegStr $R3 HKCU "${REG_KEY_FREFOX}" ""
+    StrCmp $R3 "" RegKeyNotFoundFF
+
+    MessageBox MB_YESNO "The Firefox registry entry for the Native Messaging Host already exists. Overwrite?" IDYES RegOverwriteFF IDNO RegSkipFF
+    RegOverwriteFF:
+        WriteRegStr HKCU "${REG_KEY_FREFOX}" "" "$INSTDIR\nativeMessaging\firefox.dersauger.echo.json"
+        Goto RegKeyDoneFF
+    RegSkipFF:
+        MessageBox MB_OK "The existing Firefox registry entry was not changed."
+        Goto RegKeyDoneFF
+
+    RegKeyNotFoundFF:
+        WriteRegStr HKCU "${REG_KEY_FREFOX}" "" "$INSTDIR\nativeMessaging\firefox.dersauger.echo.json"
+
+    RegKeyDoneFF:
+
     ExecShell "open" "notepad.exe" '"$INSTDIR\README.md"'
     ${If} ${Errors}
         MessageBox MB_OK "Note: README.md could not be opened automatically. You can find the file at: $INSTDIR\README.txt"
+    ${EndIf}
+
+    ; Open the installation directory in Windows Explorer
+    ExecShell "open" "$INSTDIR"
+    ${If} ${Errors}
+        MessageBox MB_OK "Could not open the installation directory in Windows Explorer."
     ${EndIf}
 
 SectionEnd
@@ -295,12 +378,42 @@ Function InstallOptionsLeave
 FunctionEnd
 
 Section "Uninstall"
+
+    ; --- Added Firefox removal logic ---
+    ; Remove Firefox registry key
+    DeleteRegKey HKCU "${REG_KEY_FREFOX}"
+    MessageBox MB_OK "The Firefox registry entries have been removed."
+
+    ; Remove the Chrome registry key
+    DeleteRegKey HKCU "${REG_KEY_CHROME}"
+    MessageBox MB_OK "The Chrome registry entries have been removed."
+
+    ; Remove the install location registry key
+    DeleteRegKey HKCU "${REG_PATH}"
+    MessageBox MB_OK "The registry entry of the install location has been removed."
+
+    ; --- Prepare for proper cleanup ---
+    ; Remove files from the nativeMessaging directory before removing $INSTDIR
+    Delete "$INSTDIR\nativeMessaging\dersauger.echo-firefox-win.json"
+    Delete "$INSTDIR\nativeMessaging\com.google.chrome.dersauger.echo-win.json"
+    RmDir "$INSTDIR\nativeMessaging"
+
+    ; --- Original code ---
+    ; Remove the uninstall executable
     Delete "$INSTDIR\Uninstall.exe"
+    ; Remove all remaining files in $INSTDIR
     Delete "$INSTDIR\*.*"
-    RmDir "$INSTDIR"
 
-    DeleteRegKey HKCU "${REG_KEY}"
-    MessageBox MB_OK "The registry entries have been removed."
+    ; --- Additional step to ensure removal of all content ---
+    ; Recursively remove the entire directory, including any remaining files or subdirectories
+    RMDir /r "$INSTDIR"
 
-    MessageBox MB_OK "The Chrome extension has been uninstalled."
+    ; Remove $INSTDIR itself
+    RMDir "$INSTDIR"
+
+    ; Remove the uninstaller entry from Windows
+    DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DerSauger"
+
+
 SectionEnd
+

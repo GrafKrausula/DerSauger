@@ -18,7 +18,7 @@ function onDisconnected() {
 
 async function connect() {
   connected = true;
-  const hostName = "com.google.chrome.dersauger.echo";
+  const hostName = "firefox.dersauger.echo";
   console.log("Connecting to native messaging host: " + hostName);
   port = browser.runtime.connectNative(hostName);
   port.onMessage.addListener(onNativeMessage);
@@ -86,7 +86,7 @@ browser.commands.onCommand.addListener(async function(command) {
   }
 });
 
-browser.action.onClicked.addListener(async function (tab) {
+browser.browserAction.onClicked.addListener(async function (tab) {
   await sendPreferences();
 });
 
