@@ -28,7 +28,10 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Configure paths to Python interpreters in virtual environments
 # Relative paths go up one level (..) from host directory
+# Then script_dir will be C:\MyApp\
 PYTHON39_VENV_PATH_RELATIVE = "..\\python39_venv\\Scripts"
+
+# Then script_dir will be C:\MyApp\python39_venv\Scripts
 PYTHON39_VENV_PATH_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PYTHON39_VENV_PATH_RELATIVE))
 
 PYTHON39_VENV_PATH_EXE_RELATIVE = "..\\python39_venv\\Scripts\\python.exe"
@@ -413,9 +416,7 @@ def update_youtube_dl():
     try:
         # Update youtube-dl using the packages venv
 
-        # Path to the activate script
-        PACKAGES_VENV_PATH_ABSOLUTE_ACTIVATE = os.path.normpath(os.path.join(PACKAGES_VENV_PATH_ABSOLUTE, 'activate.bat'))  # Path to the activate script
-        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_ABSOLUTE_ACTIVATE}";yt-dlp -U'
+        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -U'
         send_message('{"Info": youtube-dl update started with: %s}' % UPDATE_COMMAND)
 
         # Start the update process in a new console window

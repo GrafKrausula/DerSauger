@@ -60,7 +60,7 @@ def typeconvertcmd(filetype,filelist,supportedfiletypes):
 
         input = file
         output = input.replace(f".{filetype}","")
-        convertcmd+=(f" && ffmpeg -i \"{input}\" \"{output}.{convertformat}\"")
+        convertcmd+=(f" && ffmpeg -y -i \"{input}\" \"{output}.{convertformat}\"")
         #print(webmfiles)
 
     return convertcmd
@@ -117,7 +117,7 @@ def convertfiles(convertpath, supportedfiletypes):
         for file in filelist:
             input_file = os.path.join(convertpath, file)
             output_file = os.path.join(convertpath, file.replace(f'.{filetype}', f'.{supportedfiletypes[0]}'))
-            cmd = ["ffmpeg", "-i", input_file, output_file]
+            cmd = ["ffmpeg", "-y", "-i", input_file, output_file]
             proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             while True:
                 cmdState = proc.poll()
