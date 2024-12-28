@@ -25,6 +25,11 @@ Then follow this guide:
 ... Firefox Developer Edition and Nightly versions of Firefox will allow you to override the setting to enforce the extension signing requirement, by changing the preference xpinstall.signatures.required to false in the Firefox Configuration Editor (about:config page)." 
 https://support.mozilla.org/en-US/kb/add-on-signing-in-firefox?as=u&utm_source=inproduct
 
+Migrating from Firefox "Default" to FDE?
+Tranfer profile like this ("Restore to a different location"):
+https://support.mozilla.org/en-US/kb/back-and-restore-information-firefox-profiles
+
+
 **Chromium extension**:
 Works with Chrome, MS Edge, Opera and probably more.
 
