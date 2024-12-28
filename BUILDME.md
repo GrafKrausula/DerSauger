@@ -27,6 +27,7 @@ C:\Program Files (x86)\NSIS
 C:\Program Files (x86)\NSIS\makensis.exe
 
 https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/
+https://web.archive.org/web/20241224021402/https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/
 
 2) Install git
 ```PS
@@ -98,7 +99,7 @@ This guide explains how to compile the `saugerinstaller.nsi` script into an exec
 ## Prerequisites
 
 1. **Download and install NSIS 3.0 or later** from [nsis.sourceforge.net](https://nsis.sourceforge.net).
-2. Ensure you have the following required NSIS plugins/includes:
+2. Ensure you have the following required NSIS plugins/includes (By December 2024, they are by default included, so skip the "ensuring" and only come back to this step if the installer compilation fails.):
    - `MUI2.nsh`
    - `nsDialogs.nsh`
    - `FileFunc.nsh`
