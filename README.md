@@ -19,25 +19,31 @@ Then, run the file.
 **Q:** The installer aborts/fails?!?
 **A:** Ensure that "winget" works.
 
-The WinGet command line tool is only supported on Windows 10 1709 (build 16299) or later at this time. WinGet will not be available until you have logged into Windows as a user for the first time, triggering Microsoft Store to register the Windows Package Manager as part of an asynchronous process. If you have recently logged in as a user for the first time and find that WinGet is not yet available, you can open PowerShell and enter the following command to request this WinGet registration: Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+The WinGet command line tool is only supported on Windows 10 1709 (build 16299) or later at this time. WinGet will not be available until you have logged into Windows as a user for the first time, triggering Microsoft Store to register the Windows Package Manager as part of an asynchronous process. If you have recently logged in as a user for the first time and find that WinGet is not yet available, you can either:
+
+A) visit https://aka.ms/getwinget, download the installer from and install it via opening the downloaded file.
+
+B) open PowerShell and enter the following command to request this WinGet registration: 
+
+```Powershell
+Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+```
+
+After installing winget, retry opening the installer.
+
+
+Sources:
+
+https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer
+http://web.archive.org/web/20241217202156/https://learn.microsoft.com/en-us/windows/msix/app-installer/install-update-app-installer
 
 https://learn.microsoft.com/en-us/windows/package-manager/winget/
-https://github.com/microsoft/winget-cli
+http://web.archive.org/web/20241228132254/https://learn.microsoft.com/en-us/windows/package-manager/winget/
 
-or
-
-stolen from reddit:
-"Check the version of the "App Installer" package on your laptops.
-
-Microsoft changed all the FQDNs used by Winget some time back, which broke it.
-
-Fk knows why they chose a solution of needing to upgrade the "App Installer" package instead of fixing it via Windows Update. And you'll need access to the MS Store to install the latest "App Installer".
-
-It's almost as if someone is trying to push their store..."
 https://github.com/microsoft/winget-cli
 
 
-**Q:** I installed DerSauger and everything, but nothing is happening?!  
+**Q:** I completed the installer of DerSauger, but nothing is happening?!  
 **A:** Please download the "Visual C++ Redistributable Packages for Visual Studio 2015, 2017, and 2019."  
 
 - For 32-bit systems, download **"x86: vc_redist.x86.exe."**  
