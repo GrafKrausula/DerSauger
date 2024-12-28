@@ -10,9 +10,21 @@ Go to the releases page:
 Look for the latest release (at the very top) and click on the `.exe` file to download it.  
 Then, run the file.
 
----------------------------------------------------------------
+-----------------------------------------
+
+**Firefox extension**:
+Only works with "Firefox Developer Edition" (FDE). You can have the basic Firefox and FDE version installed in parralel without interference between those.
+FDE is safe to use as your daily driver. If in doubt, do your own research.
+Download the Firefox Developer Edition from here and run with admin privileges to install.
+https://www.mozilla.org/en-US/firefox/developer/
+
+**Chromium extension**:
+Works with Chrome, MS Edge, Opera and probably more.
+
+-----------------------------------------
 
 **You're all set!**
+
 
 **FAQ:**
 
