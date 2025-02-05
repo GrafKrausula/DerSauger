@@ -6,7 +6,7 @@
 
 Ensure 4 things:
 
-1) install nsis via winget:
+1) install nsis via winget (Check FAQ @ [README.md](README.md) if the following command fails):
 
 ```PS
 winget list NSIS.NSIS

@@ -18,6 +18,18 @@ FDE is safe to use as your daily driver. If in doubt, do your own research.
 Download the Firefox Developer Edition from here and run with admin privileges to install.
 https://www.mozilla.org/en-US/firefox/developer/
 
+Then follow this guide:
+
+"What are my options if I want to use an unsigned add-on? (advanced users)
+
+... Firefox Developer Edition and Nightly versions of Firefox will allow you to override the setting to enforce the extension signing requirement, by changing the preference xpinstall.signatures.required to false in the Firefox Configuration Editor (about:config page)." 
+https://support.mozilla.org/en-US/kb/add-on-signing-in-firefox?as=u&utm_source=inproduct
+
+Migrating from Firefox "Default" to FDE?
+Tranfer profile like this ("Restore to a different location"):
+https://support.mozilla.org/en-US/kb/back-and-restore-information-firefox-profiles
+
+
 **Chromium extension**:
 Works with Chrome, MS Edge, Opera and probably more.
 
