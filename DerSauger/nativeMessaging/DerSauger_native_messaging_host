@@ -416,7 +416,7 @@ def update_youtube_dl():
     try:
         # Update youtube-dl using the packages venv
 
-        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -U'
+        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -U' #pip install --upgrade yt-dlp muss hier eigentlich gemacht werden, das geht aber prolly nicht über die python exe
         send_message('{"Info": youtube-dl update started with: %s}' % UPDATE_COMMAND)
 
         # Start the update process in a new console window
