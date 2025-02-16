@@ -45,6 +45,10 @@ PACKAGES_VENV_PATH_EXE_RELATIVE = "..\\packages_venv\\Scripts\\python.exe"
 PACKAGES_VENV_PATH_EXE_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PACKAGES_VENV_PATH_EXE_RELATIVE))
 # Example resolved absolute path: C:\MyApp\packages_venv\Scripts\python.exe
 
+PACKAGES_VENV_PATH_PIP_EXE_RELATIVE = "..\\packages_venv\\Scripts\\pip.exe"
+PACKAGES_VENV_PATH_PIP_EXE_ABSOLUTE = os.path.normpath(os.path.join(script_dir, PACKAGES_VENV_PATH_PIP_EXE_RELATIVE))
+# Example resolved absolute path: C:\MyApp\packages_venv\Scripts\pip.exe
+
 # Verify paths exist
 if not os.path.exists(PYTHON39_VENV_PATH_EXE_ABSOLUTE):
     raise FileNotFoundError(f"Python 3.9 interpreter not found at: {PYTHON39_VENV_PATH_EXE_ABSOLUTE}")
@@ -416,7 +420,7 @@ def update_youtube_dl():
     try:
         # Update youtube-dl using the packages venv
 
-        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -U' #pip install --upgrade yt-dlp muss hier eigentlich gemacht werden, das geht aber prolly nicht über die python exe, sondern über die pip.exe mit dem jeweiligen pfad
+        UPDATE_COMMAND = f'"{PACKAGES_VENV_PATH_PIP_EXE_ABSOLUTE}" install --upgrade yt-dlp' #pip install --upgrade yt-dlp muss hier eigentlich gemacht werden, das geht aber prolly nicht über die python exe, sondern über die pip.exe mit dem jeweiligen pfad
         send_message('{"Info": youtube-dl update started with: %s}' % UPDATE_COMMAND)
 
         # Start the update process in a new console window
