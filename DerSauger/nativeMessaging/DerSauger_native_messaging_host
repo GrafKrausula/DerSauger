@@ -139,7 +139,7 @@ def createdownloadcmd(url,downloadpath):
 
     send_message('{"Info": createdownloadcmd started: %s}' %url)
     downloadcmd = f'cmd /c "cd /d "{downloadpath}"' #/k window stays /c window dies
-    downloadcmd+= f' && "{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -f bestvideo+bestaudio/best {url}'
+    downloadcmd+= f' && "{PACKAGES_VENV_PATH_EXE_ABSOLUTE}" -m yt_dlp -f bestvideo+bestaudio/best "{url}"'
     downloadcmd+= ' " '
     send_message('{"cmd": %s}' % downloadcmd)
     return downloadcmd
