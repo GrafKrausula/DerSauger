@@ -56,23 +56,37 @@ git commit -m "Update README [skip ci]"
 git push
 ```
 
-### Manuell Version setzen
+### Manuell Version setzen (Major/Minor Release)
 Falls du eine spezifische Version setzen willst (z.B. für Major Release):
 ```powershell
+# 1. Version lokal setzen (ohne Build)
 python build_scripts/bump_version.py major   # oder: minor, 2.0.0
+
+# 2. Commit mit [skip ci] um doppelten Bump zu vermeiden  
 git add saugerinstaller.nsi
-git commit -m "Bump to 2.0.0 [skip ci]"      # Skip CI um doppelten Bump zu vermeiden
+git commit -m "Bump to 2.0.0 Alpha [skip ci]"
 git push
-# Nächster Push löst dann Build mit 2.0.0 Alpha aus
+
+# 3. Nächster normaler Push löst Build mit der gesetzten Version aus
+git add -A
+git commit -m "Some change"
+git push
+# → Baut 2.0.0 Beta (bumpt von Alpha → Beta)
 ```
+
+**Wichtig:** Der erste Push nach dem manuellen Bump sollte NICHT `[skip ci]` haben, damit ein Build ausgelöst wird.
 
 ---
 
-### Lokaler Build (optional)
-Falls du lokal bauen willst (ohne GitHub):
-```powershell
-python build_scripts/release.py
-```
+## Workflow-Übersicht
+
+| Was du willst | Wie |
+|---------------|-----|
+| Normaler Release | `git push` (Version bumpt automatisch) |
+| Nur Docs ändern, kein Release | Commit mit `[skip ci]` |
+| Major Version (1.x → 2.0) | `bump_version.py major` + push mit `[skip ci]`, dann normaler push |
+| Minor Version (1.0 → 1.1) | `bump_version.py minor` + push mit `[skip ci]`, dann normaler push |
+| Lokaler Build ohne GitHub | `python build_scripts/release.py` |
 
 ---
 
