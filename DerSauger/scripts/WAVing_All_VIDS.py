@@ -1,12 +1,8 @@
 import sys
 import os
-import pathlib
 import traceback
-from pathlib import Path
 import subprocess
-from subprocess import Popen, PIPE
-from os import walk
-import os, shutil, glob
+import shutil
 
 """"
 Dependence:
@@ -19,7 +15,7 @@ def getfilelist(filetype, path):
     #print(allfiles)
     filetypefiles = []
     for file in allfiles:
-        if f".{filetype}" in file:
+        if file.lower().endswith(f".{filetype.lower()}"):
             filetypefiles.append(file)
 
     #print(webmfiles)
@@ -89,7 +85,7 @@ def makedir(convertpath,new_fldr_name):
 
     new_fldr_name = new_fldr_name.upper()
 
-    new_fldr = f'{convertpath}\{new_fldr_name}'
+    new_fldr = os.path.join(convertpath, new_fldr_name)
     #print(new_fldr)
 
     try:
@@ -109,14 +105,19 @@ def makedirlist(convertpath,supportedfiletypes):
 
 def convertfiles(convertpath, supportedfiletypes):
     filelists = getfilelists(convertpath, supportedfiletypes)
+    convertformat = supportedfiletypes[0]
     print("Supported Formats:", supportedfiletypes)
     print(filelists)
     for filelist in filelists:
         indexint = filelists.index(filelist)
         filetype = supportedfiletypes[indexint]
+        # Skip files that are already in the target format
+        if filetype == convertformat:
+            print(f"Skipping {len(filelist)} file(s) already in {convertformat} format")
+            continue
         for file in filelist:
             input_file = os.path.join(convertpath, file)
-            output_file = os.path.join(convertpath, file.replace(f'.{filetype}', f'.{supportedfiletypes[0]}'))
+            output_file = os.path.join(convertpath, file.replace(f'.{filetype}', f'.{convertformat}'))
             cmd = ["ffmpeg", "-y", "-i", input_file, output_file]
             proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             while True:
@@ -129,7 +130,7 @@ def convertfiles(convertpath, supportedfiletypes):
     
 def removeduplicatindestionation(destination,file):
 
-    destinationfile = f"{destination}\{file}"
+    destinationfile = os.path.join(destination, file)
     #print(f"To:{destinationfile}")
     destinationfile_exists = os.path.exists(destinationfile)
     if destinationfile_exists == True:
@@ -164,11 +165,13 @@ def movefiletofolder(filetype, src_fldr, destination):
             #print(src_fldr)
             #print(file)
             #input('DEBUG WAITING')
-            rawfilepath = f"{src_fldr}\{file}"
+            rawfilepath = os.path.join(src_fldr, file)
             #print(f"From:{filepath}")
 
             filepath = removeillegalexpressions(rawfilepath)
-            removeduplicatindestionation(destination,file)
+            # Get the actual filename after potential rename
+            actual_filename = os.path.basename(filepath)
+            removeduplicatindestionation(destination, actual_filename)
 
             try:
                 shutil.move(filepath, destination)

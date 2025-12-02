@@ -1,6 +1,32 @@
 # Building the DerSauger Installer (Only on windows 10, preferably and tested only on 11)
 
+---
 
+## Quick Release (One-Step Build with Auto-Versioning)
+
+After completing the setup below, releasing a new version is **one command**:
+
+```powershell
+python build_scripts/release.py
+```
+
+This automatically:
+1. Increments the Greek letter (Alpha → Beta → ... → Omega)
+2. After Omega: increments Patch and resets to Alpha
+3. Builds the complete installer
+
+### Release Options
+
+| Command | Effect | Example |
+|---------|--------|---------|
+| `python build_scripts/release.py` | Next Greek letter | `1.0.0 Zeta` → `1.0.0 Eta` |
+| `python build_scripts/release.py minor` | Increment Minor, reset to Alpha | `1.0.5 Theta` → `1.1.0 Alpha` |
+| `python build_scripts/release.py major` | Increment Major, reset to Alpha | `1.2.3 Psi` → `2.0.0 Alpha` |
+| `python build_scripts/release.py 2.5.0` | Set specific version, reset to Alpha | → `2.5.0 Alpha` |
+
+> 📖 See [VERSIONING.md](VERSIONING.md) for the complete versioning scheme documentation.
+
+---
 
 ## Autobuild (only windows documented)
 

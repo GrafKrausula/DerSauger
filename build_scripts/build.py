@@ -14,7 +14,13 @@ def check_command(command, install_instructions):
         sys.exit(1)
 
 def check_nsis():
-    """Check for NSIS availability and fallback to alternative path if necessary."""
+    """Check for NSIS availability. Uses NSIS_PATH env var if set by release.py."""
+    # If release.py already verified NSIS, use that path
+    env_nsis_path = os.environ.get("NSIS_PATH")
+    if env_nsis_path and os.path.exists(env_nsis_path):
+        print(f"Using NSIS from release.py: {env_nsis_path}")
+        return env_nsis_path
+    
     try:
         # Attempt to check using default `makensis`
         subprocess.run(["makensis", "/VERSION"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
@@ -27,6 +33,7 @@ def check_nsis():
         else:
             print("Error: NSIS is not installed.")
             print("Install it by running: winget install NSIS.NSIS\n")
+            print("Or use release.py which handles NSIS installation automatically.")
             sys.exit(1)
 
 def check_prerequisites():

@@ -34,7 +34,8 @@
         "*.m",
         "Dockerfile",
         "*.file",
-        "*.txt"
+        "*.txt",
+        "DerSauger_native_messaging_host"
     ],
     "exclude_patterns": [
         "*.png",
