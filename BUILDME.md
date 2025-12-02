@@ -28,6 +28,54 @@ This automatically:
 
 ---
 
+## Automatic Releases (CI/CD)
+
+Every push to `main`/`master` automatically:
+1. **Bumps the version** (next Greek letter, or patch+Alpha after Omega)
+2. Builds the installer on GitHub Actions
+3. Commits the version change back to the repo
+4. Creates a GitHub Release with the installer attached
+
+### Zero-Friction Workflow
+```powershell
+# Das ist alles was du brauchst:
+git add -A
+git commit -m "Fix bug XYZ"
+git push
+```
+
+**Das war's!** GitHub Actions macht den Rest:
+- Version bump (z.B. `1.0.0 Zeta` → `1.0.0 Eta`)
+- Installer bauen
+- Release erstellen mit Installer + Firefox Extension
+
+### Skip CI
+Falls du einen Commit pushen willst OHNE Build/Release:
+```powershell
+git commit -m "Update README [skip ci]"
+git push
+```
+
+### Manuell Version setzen
+Falls du eine spezifische Version setzen willst (z.B. für Major Release):
+```powershell
+python build_scripts/bump_version.py major   # oder: minor, 2.0.0
+git add saugerinstaller.nsi
+git commit -m "Bump to 2.0.0 [skip ci]"      # Skip CI um doppelten Bump zu vermeiden
+git push
+# Nächster Push löst dann Build mit 2.0.0 Alpha aus
+```
+
+---
+
+### Lokaler Build (optional)
+Falls du lokal bauen willst (ohne GitHub):
+```powershell
+python build_scripts/release.py
+```
+
+---
+
 ## Autobuild (only windows documented)
 
 Ensure 4 things:

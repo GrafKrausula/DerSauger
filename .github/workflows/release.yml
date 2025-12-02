@@ -1,0 +1,143 @@
+name: Build and Release Installer
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    # Skip if commit message contains [skip ci] or is a version bump commit
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[auto-version]')"
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install NSIS
+        run: |
+          choco install nsis -y --version=3.11
+        shell: pwsh
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        shell: pwsh
+
+      - name: Auto-bump version (Greek alphabet)
+        id: version
+        run: |
+          $greekAlphabet = @(
+            "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta",
+            "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu",
+            "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma",
+            "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"
+          )
+          
+          # Read current version
+          $content = Get-Content "saugerinstaller.nsi" -Raw
+          $version = [regex]::Match($content, '!define VERSION "([^"]+)"').Groups[1].Value
+          $postfix = [regex]::Match($content, '!define POSTFIX "([^"]+)"').Groups[1].Value
+          
+          Write-Host "Current version: $version $postfix"
+          
+          # Find current Greek index
+          $currentIndex = -1
+          for ($i = 0; $i -lt $greekAlphabet.Length; $i++) {
+            if ($greekAlphabet[$i] -eq $postfix) {
+              $currentIndex = $i
+              break
+            }
+          }
+          
+          # Calculate new version
+          if ($currentIndex -eq 23) {
+            # At Omega - increment patch and reset to Alpha
+            $parts = $version.Split('.')
+            $parts[2] = [int]$parts[2] + 1
+            $newVersion = $parts -join '.'
+            $newPostfix = "Alpha"
+          } elseif ($currentIndex -ge 0) {
+            # Advance to next Greek letter
+            $newVersion = $version
+            $newPostfix = $greekAlphabet[$currentIndex + 1]
+          } else {
+            # Unknown postfix, start with Alpha
+            $newVersion = $version
+            $newPostfix = "Alpha"
+          }
+          
+          Write-Host "New version: $newVersion $newPostfix"
+          
+          # Update NSI file
+          $content = $content -replace '!define VERSION "[^"]+"', "!define VERSION `"$newVersion`""
+          $content = $content -replace '!define POSTFIX "[^"]+"', "!define POSTFIX `"$newPostfix`""
+          Set-Content "saugerinstaller.nsi" -Value $content -NoNewline
+          
+          # Set outputs
+          echo "VERSION=$newVersion" >> $env:GITHUB_OUTPUT
+          echo "POSTFIX=$newPostfix" >> $env:GITHUB_OUTPUT
+          echo "FULL_VERSION=$newVersion $newPostfix" >> $env:GITHUB_OUTPUT
+          echo "INSTALLER_NAME=DerSaugerInstaller_${newVersion}_${newPostfix}.exe" >> $env:GITHUB_OUTPUT
+          echo "TAG=v${newVersion}-${newPostfix}" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Generate extension icons
+        run: |
+          python build_scripts/generate_extension_icons.py
+        shell: pwsh
+
+      - name: Zip Firefox extension
+        run: |
+          Compress-Archive -Path "DerSauger\Firefox Extension\*" -DestinationPath "DerSauger\Firefox_Extension.zip" -Force
+        shell: pwsh
+
+      - name: Build installer with NSIS
+        run: |
+          & "C:\Program Files (x86)\NSIS\makensis.exe" saugerinstaller.nsi
+        shell: pwsh
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add saugerinstaller.nsi
+          git commit -m "🔖 Auto-bump to ${{ steps.version.outputs.FULL_VERSION }} [auto-version]" || echo "No changes to commit"
+          git push
+        shell: pwsh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: DerSauger ${{ steps.version.outputs.FULL_VERSION }}
+          body: |
+            ## DerSauger ${{ steps.version.outputs.FULL_VERSION }}
+            
+            🤖 Automatisch gebaut von GitHub Actions
+            
+            ### Installation
+            1. `${{ steps.version.outputs.INSTALLER_NAME }}` herunterladen
+            2. Ausführen und den Anweisungen folgen
+            
+            ### Änderungen
+            Siehe [Commit-Historie](https://github.com/${{ github.repository }}/commits/${{ github.sha }}) für Details.
+          files: |
+            ${{ steps.version.outputs.INSTALLER_NAME }}
+            DerSauger/Firefox_Extension.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
