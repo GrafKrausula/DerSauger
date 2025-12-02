@@ -96,7 +96,18 @@ jobs:
 
       - name: Generate extension icons
         run: |
-          python build_scripts/generate_extension_icons.py
+          $folders = @(
+            "DerSauger\Firefox Extension\images",
+            "DerSauger\Chrome Extension\images"
+          )
+          foreach ($folder in $folders) {
+            $inputFile = Join-Path $folder "Sauger.png"
+            if (Test-Path $inputFile) {
+              python build_scripts/generate_extension_icons.py $inputFile $folder
+            } else {
+              Write-Host "Warning: $inputFile not found, skipping"
+            }
+          }
         shell: pwsh
 
       - name: Zip Firefox extension
