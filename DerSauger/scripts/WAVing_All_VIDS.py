@@ -201,17 +201,32 @@ def convertfiles(convertpath, supportedfiletypes):
             cmd = ["ffmpeg", "-y", "-i", input_file, output_file]
             proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             log(f"Converting: {file} -> {convertformat}")
+            
+            # FFmpeg Output sammeln
+            ffmpeg_output = []
             while True:
                 cmdState = proc.poll()
                 if cmdState is not None:
                     break
                 line = proc.stdout.readline()
-                # FFmpeg output nur bei DEBUG level loggen (sehr verbose)
+                if line:
+                    ffmpeg_output.append(line.decode('utf-8', errors='replace').strip())
+            
+            # Restlichen Output lesen
+            remaining_output = proc.stdout.read()
+            if remaining_output:
+                ffmpeg_output.extend(remaining_output.decode('utf-8', errors='replace').strip().split('\n'))
+            
             if proc.returncode == 0:
                 log(f"Successfully converted: {file}")
                 converted_count += 1
             else:
                 log(f"Conversion failed for: {file} (exit code: {proc.returncode})", "ERROR")
+                # Bei Fehler: FFmpeg Output loggen
+                log(f"FFmpeg output for failed conversion:", "ERROR")
+                for line in ffmpeg_output[-20:]:  # Letzte 20 Zeilen
+                    if line.strip():
+                        log(f"  {line}", "ERROR")
                 failed_count += 1
     
     log(f"CONVERSION FINISHED! Converted: {converted_count}, Skipped (existing): {skipped_existing}, Skipped (same format): {skipped_same_format}, Failed: {failed_count}")
