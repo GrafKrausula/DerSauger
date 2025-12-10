@@ -174,16 +174,30 @@ def convertfiles(convertpath, supportedfiletypes):
     convertformat = supportedfiletypes[0]
     log(f"Starting conversion - Target format: {convertformat}")
     log(f"File lists to process: {filelists}", "DEBUG")
+    
+    converted_count = 0
+    skipped_existing = 0
+    skipped_same_format = 0
+    failed_count = 0
+    
     for filelist in filelists:
         indexint = filelists.index(filelist)
         filetype = supportedfiletypes[indexint]
         # Skip files that are already in the target format
         if filetype == convertformat:
             log(f"Skipping {len(filelist)} file(s) already in {convertformat} format")
+            skipped_same_format += len(filelist)
             continue
         for file in filelist:
             input_file = os.path.join(convertpath, file)
             output_file = os.path.join(convertpath, file.replace(f'.{filetype}', f'.{convertformat}'))
+            
+            # Prüfen ob Output-Datei bereits existiert - dann überspringen
+            if os.path.exists(output_file):
+                log(f"Skipping (already converted): {file} -> {os.path.basename(output_file)}")
+                skipped_existing += 1
+                continue
+            
             cmd = ["ffmpeg", "-y", "-i", input_file, output_file]
             proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             log(f"Converting: {file} -> {convertformat}")
@@ -195,9 +209,12 @@ def convertfiles(convertpath, supportedfiletypes):
                 # FFmpeg output nur bei DEBUG level loggen (sehr verbose)
             if proc.returncode == 0:
                 log(f"Successfully converted: {file}")
+                converted_count += 1
             else:
                 log(f"Conversion failed for: {file} (exit code: {proc.returncode})", "ERROR")
-    log("CONVERSION FINISHED!")
+                failed_count += 1
+    
+    log(f"CONVERSION FINISHED! Converted: {converted_count}, Skipped (existing): {skipped_existing}, Skipped (same format): {skipped_same_format}, Failed: {failed_count}")
     
 def removeduplicatindestionation(destination,file):
 
@@ -225,19 +242,26 @@ def movefilestoroot(convertpath, downloadpath, filetypefolderlist,supportedfilet
 
 def movefiletofolder(filetype, src_fldr, destination):
 
-    #print(filetype,src_fldr,destination)
     err_count = 0
     success_count = 0
+    skipped_count = 0
     errors = []
-    #print(src_fldr)
-    #print(filetype)
-    for file in os.listdir(src_fldr):
-        if file.endswith(f".{filetype}"):
-            #print(src_fldr)
-            #print(file)
-            #input('DEBUG WAITING')
+    
+    # Alle Dateien im Quellordner durchgehen
+    try:
+        all_files = os.listdir(src_fldr)
+    except Exception as e:
+        log(f"Cannot list directory {src_fldr}: {e}", "ERROR")
+        return
+    
+    for file in all_files:
+        # Case-insensitive Prüfung
+        if file.lower().endswith(f".{filetype.lower()}"):
             rawfilepath = os.path.join(src_fldr, file)
-            #print(f"From:{filepath}")
+            
+            # Prüfen ob es ein File ist (kein Ordner)
+            if not os.path.isfile(rawfilepath):
+                continue
 
             filepath = removeillegalexpressions(rawfilepath)
             # Get the actual filename after potential rename
@@ -246,27 +270,30 @@ def movefiletofolder(filetype, src_fldr, destination):
 
             try:
                 shutil.move(filepath, destination)
-                log(f"Moved: {file} -> {destination}", "DEBUG")
+                log(f"Moved: {actual_filename} -> {os.path.basename(destination)}")
                 success_count+=1
             except Exception as err:
-                errors.append(err)
+                errors.append(str(err))
                 err_count+=1
-                log(f"Failed to move: {file} from {src_fldr} - {err}", "ERROR")
+                log(f"Failed to move: {file} - {err}", "ERROR")
 
     if err_count > 0:
-        log(f"{err_count} MOVING ERROR(S) OCCURRED", "ERROR")
-        log(f"Errors: {errors}", "ERROR")
-    if success_count > 0: log(f"{success_count} file(s) successfully moved")
+        log(f"{err_count} MOVING ERROR(S) for .{filetype} files", "ERROR")
+        for e in errors[:5]:  # Max 5 errors loggen
+            log(f"  Error: {e}", "ERROR")
+    if success_count > 0: 
+        log(f"{success_count} .{filetype} file(s) moved to {os.path.basename(destination)}")
 
 def movefilestofolders(convertpath,filetypefolderlist,supportedfiletypes):
 
-    #print(filetypefolderlist, supportedfiletypes)
+    log(f"Moving files to type folders...")
+    log(f"Source: {convertpath}", "DEBUG")
+    log(f"Destinations: {filetypefolderlist}", "DEBUG")
 
     for filetypefolder in filetypefolderlist:
         indexint = filetypefolderlist.index(filetypefolder) #nummer des momentanen
-        #print(indexint)
         filetype = supportedfiletypes[indexint]
-        #print(indexint, filetype)
+        log(f"Processing {filetype} files -> {filetypefolder}", "DEBUG")
         movefiletofolder(filetype,convertpath,filetypefolder)
 
 def close():
