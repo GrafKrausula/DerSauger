@@ -132,9 +132,7 @@ def wavingTheVids(format,downloadpath,convertpath):
     openScriptCmd +=f' && "{PYTHON39_VENV_PATH_EXE_ABSOLUTE}" WAVing_All_VIDS.py noinput "{convertpath}" "{downloadpath}" "{format}"' #noinput = script will close after finishing
     openScriptCmd += ' " '
     send_message('{"openScriptCmd": %s}' % openScriptCmd)
-    # DETACHED_PROCESS flag (0x00000008) - Prozess läuft komplett unabhängig weiter
-    DETACHED_PROCESS = 0x00000008
-    process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE | DETACHED_PROCESS)
+    process = subprocess.Popen(openScriptCmd, creationflags=CREATE_NEW_CONSOLE)
     return
 
 def createdownloadcmd(url,downloadpath):
