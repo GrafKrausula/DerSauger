@@ -1,6 +1,6 @@
 ; Define version once for consistency
 !define VERSION "1.0.0"  ; Change this value for upgrades
-!define POSTFIX "Kappa"  ; Change this value for upgrades
+!define POSTFIX "Lambda"  ; Change this value for upgrades
 
 ; Define regpaths for installlocation detection
 !define REG_PATH "Software\InternetVacuumMegacorp\DerSauger"
